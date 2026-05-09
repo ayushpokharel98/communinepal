@@ -12,11 +12,11 @@ class TokenService:
         }
 
     @staticmethod
-    def validate(uid, token):
+    def validate(uidb64, token):
         from ..selectors.user_selector import UserSelector
         
         try:
-            user_id = urlsafe_base64_decode(uid).decode()
+            user_id = urlsafe_base64_decode(uidb64).decode()
             user = UserSelector.get_user_by_id(user_id)
         
         except Exception:

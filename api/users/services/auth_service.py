@@ -4,20 +4,23 @@ from ..models import Profile
 from .email_service import EmailService
 from .token_service import TokenService
 from ..selectors.user_selector import UserSelector
-from rest_framework.exceptions import ValidationError, AuthenticationFailed
+from rest_framework.exceptions import ValidationError, AuthenticationFailed, APIException
 
 User = get_user_model()
 class AuthService:
     
     @staticmethod
-    def register(data):
+    def register(**data):
         from django.db import transaction
         
         with transaction.atomic():
-            user = User.objects.create(**data)
+            user = User.objects.create_user(**data)
             Profile.objects.create(user = user)
-            
+        
+        try:
             EmailService.send_verification(user)
+        except Exception:
+            raise APIException({"root": ["Something went wrong, resend verification mail during logging in."]})
         
         return user
     
@@ -37,11 +40,11 @@ class AuthService:
     def login(email, password):
         user = UserSelector.get_user_by_email(email)
         
-        if not user or user.check_password(password):
-            raise Exception("Invalid credentials")
+        if not user or not user.check_password(password):
+            raise AuthenticationFailed({"error":"Invalid credentials"})
         
         if not user.is_verified:
-            raise Exception("Please verify your email first")
+            raise ValidationError({"verification":"Please verify your email first"})
         
         update_last_login(None, user)
         
@@ -69,7 +72,7 @@ class AuthService:
             raise AuthenticationFailed({"token":"Invalid or expired token"})
         
         if user.check_password(new_password):
-            raise ValidationError({"new_password" : "New and old password can't be same"})
+            raise ValidationError({"new_password" : ["New and old password can't be same"]})
         
         user.set_password(new_password)
         user.save()
