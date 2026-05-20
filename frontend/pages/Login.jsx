@@ -4,15 +4,16 @@ import Toast from '../components/Toast'
 import { useForm } from "react-hook-form"
 import AuthInput from '../components/Auth/AuthInput'
 import Loading from "../components/Loading"
-import authService from "../services/authService"
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Google from '../src/assets/Google'
 import AuthGoogle from '../components/Auth/AuthGoogle'
 import AuthButton from '../components/Auth/AuthButton'
+import { useAuth } from '../contexts/AuthContext'
 
 const Login = () => {
   const { register, formState: { errors, isSubmitting }, handleSubmit } = useForm();
-  const { login } = authService;
+  const { login } = useAuth();
+  const navigate = useNavigate();
   const location = useLocation();
   const [toast, setToast] = useState({
     type: "",
@@ -31,6 +32,7 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       await login(data);
+      navigate('/');
     } catch (err) {
       console.log(err.response?.data || err.response?.data.verification || "Something went wrong, please try again!");
       setToast({

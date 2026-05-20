@@ -9,6 +9,9 @@ import VerifyEmail from "../pages/VerifyEmail";
 import ResendEmail from "../pages/ResendEmail";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
+import Friends from "../pages/Friends";
+import Message from "../pages/Message";
+import Profile from "../pages/Profile";
 
 const App = () => {
   return (
@@ -45,6 +48,21 @@ const App = () => {
           } />
           <Route path="/reset-password/:uidb64/:token" element={
             <ResetPassword />
+          } />
+          <Route path="/friends" element={
+            <PrivateRoute>
+              <Friends />
+            </PrivateRoute>
+          } />
+          <Route path="/message" element={
+            <PrivateRoute>
+              <Message />
+            </PrivateRoute>
+          } />
+          <Route path="/profile/:username" element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
           } />
         </Routes>
       </AuthProvider>

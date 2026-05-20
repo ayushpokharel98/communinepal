@@ -22,7 +22,7 @@ const authService = {
     },
 
     logout: async () => {
-        const res = await apiAuth.post("/user/logout/");
+        const res = await api.post("/user/logout/");
         return res.data;
     },
 
@@ -38,6 +38,11 @@ const authService = {
 
     resetPassword: async (data) => {
         const res = await apiAuth.post("/user/reset-password/", data);
+        return res.data;
+    },
+
+    searchUsers: async(query) =>{
+        const res = await api.get("user/users/", {params: {search:query}});
         return res.data;
     },
 

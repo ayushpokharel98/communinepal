@@ -9,11 +9,13 @@ from .views import (
     ForgotPasswordView,
     ResetPasswordView,
     MeView,
-    UserDetailView
+    UserDetailView,
+    UserListView
 )
 urlpatterns = [
     path('me/', MeView.as_view(), name="user"),
-    path('<int:pk>/', UserDetailView.as_view(), name="other-user"),
+    path('<int:id>/', UserDetailView.as_view(), name="other-user"),
+    path('users/', UserListView.as_view(), name="user-search"),
     path("register/", RegisterView.as_view(), name="user-register"),
     path('verify-email/', VerifyEmailView.as_view(), name="verify-email"),
     path("resend-verification/", ResendVerification.as_view(), name="resend-verification"),

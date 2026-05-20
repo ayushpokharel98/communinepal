@@ -22,6 +22,8 @@ from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter
 
 User = get_user_model()
 SAMESITE = settings.JWT_COOKIE_SAMESITE
@@ -213,5 +215,11 @@ class UserDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, *args, **kwargs):
-        user = get_object_or_404(User, id=kwargs["pk"])
-        return get_object_or_404(Profile, user=user)
+        return get_object_or_404(Profile, user__id = self.kwargs["id"])
+    
+class UserListView(generics.ListAPIView):
+    serializer_class = UserDetailSerializer
+    permission_classes = [IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    search_fields = ["user__username", "user__first_name", "user__last_name"]
+    queryset = Profile.objects.all()

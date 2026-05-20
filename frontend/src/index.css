@@ -13,3 +13,54 @@
 .animate-slideIn {
   animation: slideIn 0.3s ease-out;
 }
+
+#profile {
+  position: relative;
+  display: inline-block;
+}
+
+#profile::after {
+  content: "";
+  position: absolute;
+
+  right: -2px;
+  bottom: -2px;
+
+  width: 16px;
+  height: 16px;
+
+  border-radius: 50%;
+  background-color: #1e293b;
+  border: 2px solid #111827;
+
+  display: grid;
+  place-items: center;
+}
+
+#profile::before {
+  content: "";
+  position: absolute;
+
+  right: 3px;
+  bottom: 3px;
+
+  width: 5px;
+  height: 5px;
+
+  border-right: 2px solid white;
+  border-bottom: 2px solid white;
+
+  transform: rotate(45deg);
+  z-index: 1;
+}
+
+[data-title]:hover::after {
+  content: attr(data-title);
+  background: black;
+  color: white;
+  padding: 5px;
+  position: absolute;
+  opacity: 70%;
+  border-radius: 20%;
+  z-index: 50;
+}

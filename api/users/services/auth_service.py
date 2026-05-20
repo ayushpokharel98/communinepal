@@ -55,7 +55,7 @@ class AuthService:
         user = UserSelector.get_user_by_email(email)
         
         if user and not user.is_verified:
-            EmailService.send_verification(email)
+            EmailService.send_verification(user)
     
     @staticmethod
     def forgot_password(email):
