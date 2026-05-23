@@ -1,0 +1,81 @@
+services:
+
+  backend:
+    build: ./api
+    container_name: communinepal_backend
+
+    command: >
+      sh -c "
+        python manage.py migrate &&
+        daphne -b 0.0.0.0 -p 8000 api.asgi:application
+      "
+
+    volumes:
+      - ./api:/app
+
+    ports:
+      - "8000:8000"
+
+    env_file:
+      - .env
+
+    depends_on:
+      - postgres
+      - redis
+
+  frontend:
+    build: ./frontend
+    container_name: communinepal_frontend
+
+    ports:
+      - "5173:5173"
+
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+    stdin_open: true
+    tty: true
+
+  postgres:
+    image: postgres:16
+    container_name: postgres_db
+
+    restart: always
+
+    environment:
+      POSTGRES_DB: communinepal
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ayush
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: redis_server
+
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: ./api
+    container_name: celery_worker
+
+    command: celery -A api worker -l info
+
+    volumes:
+      - ./api:/app
+
+    env_file:
+      - .env
+
+    depends_on:
+      - redis
+      - backend
+
+volumes:
+  postgres_data:
