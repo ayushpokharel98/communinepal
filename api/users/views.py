@@ -10,6 +10,8 @@ from rest_framework.status import (
 )
 from .services.auth_service import AuthService
 from .services.token_service import TokenService
+from .services.friend_service import FriendService
+from .selectors.user_selector import UserSelector
 from .models import Profile
 from .serializers import (
     RegisterSerializer,
@@ -17,6 +19,7 @@ from .serializers import (
     VerifySerializer,
     ResetPasswordSerializer,
     UserDetailSerializer,
+    FriendshipSerializer,
 )
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -215,11 +218,116 @@ class UserDetailView(generics.RetrieveAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_object(self, *args, **kwargs):
-        return get_object_or_404(Profile, user__id = self.kwargs["id"])
-    
+        return get_object_or_404(Profile, user__id=self.kwargs["id"])
+
+
 class UserListView(generics.ListAPIView):
     serializer_class = UserDetailSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, SearchFilter]
     search_fields = ["user__username", "user__first_name", "user__last_name"]
-    queryset = Profile.objects.all()
+    
+    def get_queryset(self):
+        return Profile.objects.exclude(user = self.request.user)
+
+class SendFriendRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_id):
+        receiver = UserSelector.get_user_by_id(user_id)
+        friendship = FriendService.send_request(sender=request.user, receiver=receiver)
+
+        serializer = FriendshipSerializer(friendship, context={"request": request})
+
+        return Response(serializer.data, status=HTTP_201_CREATED)
+
+
+class AcceptFriendRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, friendship_id):
+
+        friendship = FriendService.accept_request(friendship_id, request.user)
+
+        serializer = FriendshipSerializer(friendship, context={"request": request})
+
+        return Response(serializer.data)
+
+
+class RejectFriendRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, friendship_id):
+
+        FriendService.reject_request(friendship_id=friendship_id, user=request.user)
+
+        return Response({"detail": "Friend request rejected"})
+
+
+class CancelFriendRequestView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, friendship_id):
+
+        FriendService.cancel_request(friendship_id=friendship_id, user=request.user)
+
+        return Response({"detail": "Friend request cancelled"})
+
+
+class RemoveFriendView(generics.GenericAPIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, friendship_id):
+
+        FriendService.remove_friend(friendship_id=friendship_id, user=request.user)
+
+        return Response({"detail": "Friend removed"})
+
+
+class FriendListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FriendshipSerializer
+
+    def get_queryset(self):
+        return FriendService.get_friends(self.request.user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+
+        return context
+
+
+class PendingFriendRequestsView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = FriendshipSerializer
+
+    def get_queryset(self):
+
+        return FriendService.get_pending_requests(self.request.user)
+
+    def get_serializer_context(self):
+
+        context = super().get_serializer_context()
+        context["request"] = self.request
+
+        return context
+
+
+class SentFriendRequestsView(generics.ListAPIView):
+
+    permission_classes = [IsAuthenticated]
+    serializer_class = FriendshipSerializer
+
+    def get_queryset(self):
+
+        return FriendService.get_sent_requests(self.request.user)
+
+    def get_serializer_context(self):
+
+        context = super().get_serializer_context()
+        context["request"] = self.request
+
+        return context

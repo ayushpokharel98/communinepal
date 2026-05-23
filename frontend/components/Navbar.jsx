@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext"
 import logo from "../src/assets/images/logo.png"
-import { House, LogOut, MessageCircle, Settings, Users } from 'lucide-react';
+import { Bell, House, LogOut, MessageCircle, Settings, Users } from 'lucide-react';
 import { User } from "lucide-react";
 import { Link, NavLink } from "react-router-dom"
 const Navbar = ({}) => {
@@ -27,6 +27,11 @@ const Navbar = ({}) => {
       icon: MessageCircle,
       path: "/message"
     },
+    {
+      title: "Notifications",
+      icon: Bell,
+      path: '/'
+    }
   ]
 
   useEffect(() => {

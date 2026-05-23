@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { UserSearch } from "lucide-react";
+import { UserCheck, UserSearch, UserX } from "lucide-react";
 import Navbar from "../components/Navbar";
 import IncomingFriendReq from "../src/assets/IncomingFriendReq";
 import OutgoingFriendReq from "../src/assets/OutgoingFriendReq";
@@ -7,13 +7,16 @@ import All from "../src/All";
 import api from "../services/api";
 import { LucideMenu } from "lucide-react";
 import authService from "../services/authService";
+import friendService from "../services/friendService";
+import Loading from "../components/Loading";
+import Toast from "../components/Toast";
 
 const Friends = () => {
     const [selectedTab, setSelectedTab] = useState("received");
     const [query, setQuery] = useState("");
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const tabs = useMemo(() => [
+    const tabs = [
         {
             id: "received",
             label: "Received Friend Requests",
@@ -32,18 +35,18 @@ const Friends = () => {
             icon: All,
             component: <AllFriends />,
         },
-    ], []);
+    ];
 
     const activeTab = tabs.find((tab) => tab.id === selectedTab);
+
 
     return (
         <>
             <Navbar />
-
             <main className="mt-15 min-h-[calc(100vh-60px)] bg-gray-900 text-white flex flex-row">
                 <button
                     onClick={() => setSidebarOpen(prev => !prev)}
-                    className="sm:hidden fixed top-18 right-4 z-50 rounded-xl bg-gray-800 p-2 border border-gray-700"
+                    className="sm:hidden fixed top-18 right-4 z-40 rounded-xl bg-gray-800 p-2 border border-gray-700"
                 >
                     <LucideMenu className="size-6" />
                 </button>
@@ -52,7 +55,7 @@ const Friends = () => {
                     sidebarOpen && (
                         <div
                             onClick={() => setSidebarOpen(false)}
-                            className=" fixed inset-0  bg-black/50 z-40 sm:hidden" />
+                            className=" fixed inset-0  bg-black/50 z-30 sm:hidden" />
                     )
                 }
                 <aside
@@ -113,7 +116,6 @@ const Friends = () => {
                     </nav>
                 </aside>
 
-                {/* CONTENT */}
                 <section className="flex-1 p-4 sm:p-6 overflow-y-auto">
                     {query ? (
                         <SearchResults query={query} />
@@ -135,31 +137,197 @@ const Default = () => {
 };
 
 const ReceivedFriendReq = () => {
-    return (
-        <div>
-            <h2 className="text-xl font-semibold tracking-wide">
+    const [receivedRequests, setReceivedRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState({
+        type: "",
+        message: ""
+    });
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setLoading(true);
+                const res = await friendService.receivedRequests();
+                setReceivedRequests(res);
+
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
+    }, []);
+
+    const handleAcceptRequest = async (friendshipId) => {
+        try {
+            await friendService.acceptRequest(friendshipId);
+            setToast({ type: "success", message: "Friend Request Accepted!" })
+            setReceivedRequests((prev) => prev.filter((request) => request.id !== friendshipId))
+        } catch (err) {
+            console.log(err);
+            setToast({ type: "error", message: "Something went wrong, try again later!" })
+        }
+    }
+    const handleRejectRequest = async (friendshipId) => {
+        try {
+            await friendService.rejectRequest(friendshipId);
+            setToast({ type: "success", message: "Friend Request Rejected!" })
+            setReceivedRequests((prev) => prev.filter((request) => request.id !== friendshipId))
+        } catch (err) {
+            console.log(err);
+            setToast({ type: "error", message: "Something went wrong, try again later!" })
+        }
+    }
+
+    return loading ? <Loading /> : (
+        <div className="">
+            <Toast type={toast.type} message={toast.message} setMessage={(msg) => setToast({ ...toast, message: msg })} />
+
+            <h2 className="text-2xl font-semibold">
                 Received Friend Requests
             </h2>
+            {receivedRequests.length === 0 ? <p className="text-gray-400">
+                No friend requests received
+            </p> :
+                <ul className="mt-5 flex flex-col gap-3">
+                    {receivedRequests.map((req) => (
+                        <li key={req.id} className="flex bg-gray-800 p-2 rounded-xl items-center w-full">
+                            <div className="flex-1 flex items-center gap-3">
+                                <img src={req.other_user.profile_picture} className="rounded-full size-12" alt="" />
+                                <p>@{req.other_user.username}</p>
+                            </div>
+                            <button className="bg-gray-600 relative p-2 hover:bg-green-800 transition duration-300 rounded-xl mr-2" onClick={() => handleAcceptRequest(req.id)}><UserCheck /></button>
+                            <button className="bg-gray-600 relative p-2 hover:bg-red-700 transition duration-300 rounded-xl" onClick={() => handleRejectRequest(req.id)}><UserX /></button>
+                        </li>
+                    ))
+                    }
+                </ul>
+            }
         </div>
     );
 };
 
 const SentFriendReq = () => {
-    return (
-        <div>
+    const [sentRequests, setSentRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState({
+        type: "",
+        message: ""
+    });
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setLoading(true);
+                const res = await friendService.sentRequests();
+                setSentRequests(res);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
+    }, []);
+
+    const handleCancelRequest = async (friendshipId) => {
+        try {
+            await friendService.cancelRequest(friendshipId);
+            setToast({ type: "success", message: "Friend Request Cancelled!" })
+            setSentRequests((prev) => prev.filter((request) => request.id !== friendshipId))
+        } catch (err) {
+            console.log(err);
+            setToast({ type: "error", message: "Something went wrong, try again later!" })
+        }
+    }
+
+    return loading ? <Loading /> : (
+        <div className="">
+            <Toast type={toast.type} message={toast.message} setMessage={(msg) => setToast({ ...toast, message: msg })} />
+
             <h2 className="text-2xl font-semibold">
                 Sent Friend Requests
             </h2>
+            {sentRequests.length === 0 ? <p className="text-gray-400">
+                No sent requests
+            </p> :
+                <ul className="mt-5 flex flex-col gap-3">
+                    {sentRequests.map((req) => (
+                        <li key={req.id} className="flex bg-gray-800 p-2 rounded-xl items-center w-full">
+                            <div className="flex-1 flex items-center gap-3">
+                                <img src={req.other_user.profile_picture} className="rounded-full size-12" alt="" />
+                                <p>@{req.other_user.username}</p>
+                            </div>
+                            <button className="bg-gray-600 p-2 hover:bg-gray-700 transition duration-300 rounded-xl" onClick={() => handleCancelRequest(req.id)}>Cancel Request</button>
+                        </li>
+                    ))
+                    }
+                </ul>
+            }
         </div>
     );
 };
 
 const AllFriends = () => {
-    return (
+    const [friends, setFriends] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState({
+        type: "",
+        message: ""
+    });
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                setLoading(true);
+                const res = await friendService.viewAllFriends();
+                console.log(res);
+
+                setFriends(res);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchUsers();
+    }, [])
+    const handleRemoveFriend = async (friendshipId) => {
+        try {
+            await friendService.removeFriend(friendshipId);
+            setToast({ type: "success", message: "Friend Removed!" })
+            setFriends((prev) => prev.filter((request) => request.id !== friendshipId))
+        } catch (err) {
+            console.log(err);
+            setToast({ type: "error", message: "Something went wrong, try again later!" })
+        }
+    }
+    return loading ? <Loading /> : (
         <div>
+            <Toast type={toast.type} message={toast.message} setMessage={(msg) => setToast({ ...toast, message: msg })} />
+
             <h2 className="text-2xl font-semibold">
                 All Friends
             </h2>
+            {friends.length === 0 ? <p className="text-gray-400">
+                No friends
+            </p> :
+                <div className="grid md:grid-cols-2 gap-3 mt-2">
+                    {friends.map((friend) => (
+                        <div key={friend.id} className="bg-gray-700 p-2 rounded-xl flex">
+                            <div className="flex flex-1 items-center gap-2">
+                                <img src={friend.other_user.profile_picture} className="size-12 rounded-full" alt="" />
+                                <p>@{friend.other_user.username}</p>
+                            </div>
+                            <button onClick={() => handleRemoveFriend(friend.id)} className="bg-gray-600 p-2 hover:bg-red-700 transition duration-300 rounded-xl">Remove</button>
+                        </div>
+                    ))}
+                </div>
+            }
         </div>
     );
 };
@@ -167,11 +335,16 @@ const AllFriends = () => {
 const SearchResults = ({ query }) => {
     const [loading, setLoading] = useState(false);
     const [users, setUsers] = useState([]);
+    const [toast, setToast] = useState({
+        type: "",
+        message: ""
+    });
     useEffect(() => {
         const fetchUsers = async () => {
             setLoading(true);
             try {
                 const res = await authService.searchUsers(query);
+                console.log(res)
                 setUsers(res);
             } catch (err) {
                 console.log(err);
@@ -182,11 +355,35 @@ const SearchResults = ({ query }) => {
         }
         fetchUsers()
     }, [query])
-    const handleAddFriend = async () => {
+    const handleAddFriend = async (userId) => {
+        try {
+            await friendService.sendRequest(userId);
 
-    }
+            setUsers(prev =>
+                prev.map(user =>
+                    user.user.id === userId
+                        ? { ...user, request_pending: true }
+                        : user
+                )
+            );
+
+            setToast({
+                type: "success",
+                message: "Friend request sent!"
+            });
+
+        } catch (err) {
+            console.log(err);
+            setToast({
+                type: "error",
+                message: "Something went wrong, try again later!"
+            });
+        }
+    };
     return (
         <div className="flex h-full flex-col">
+            <Toast type={toast.type} message={toast.message} setMessage={(msg) => setToast({ ...toast, message: msg })} />
+
             <h2 className="text-2xl font-semibold">
                 Search Results
             </h2>
@@ -224,10 +421,12 @@ const SearchResults = ({ query }) => {
 
                                 <button
                                     onClick={() => handleAddFriend(user.user.id)}
-                                    className="mt-2 rounded-xl bg-blue-600 px-4 py-2 font-medium transition hover:bg-blue-700 active:scale-[0.98]"
+                                    className="mt-2 rounded-xl bg-blue-600 px-4 py-2 font-medium transition hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-700"
+                                    disabled={user.is_friend || user.request_pending}
                                 >
-                                    Add Friend
+                                    {user.is_friend ? "Already Friends" : user.request_pending ? "Request exists" : "Add Friend"}
                                 </button>
+
                             </div>
                         </div>
                     ))}
