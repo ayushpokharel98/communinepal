@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { UserCheck, UserSearch, UserX } from "lucide-react";
+import { UserCheck, UserPlus, UserSearch, UserX } from "lucide-react";
 import Navbar from "../components/Navbar";
 import IncomingFriendReq from "../src/assets/IncomingFriendReq";
 import OutgoingFriendReq from "../src/assets/OutgoingFriendReq";
@@ -10,6 +10,9 @@ import authService from "../services/authService";
 import friendService from "../services/friendService";
 import Loading from "../components/Loading";
 import Toast from "../components/Toast";
+import { Link, useNavigate } from "react-router-dom";
+import Button from "../components/Button";
+import PlainButton from "../components/PlainButton";
 
 const Friends = () => {
     const [selectedTab, setSelectedTab] = useState("received");
@@ -152,7 +155,6 @@ const ReceivedFriendReq = () => {
                 setReceivedRequests(res);
 
             } catch (err) {
-                console.error(err);
             } finally {
                 setLoading(false);
             }
@@ -167,7 +169,6 @@ const ReceivedFriendReq = () => {
             setToast({ type: "success", message: "Friend Request Accepted!" })
             setReceivedRequests((prev) => prev.filter((request) => request.id !== friendshipId))
         } catch (err) {
-            console.log(err);
             setToast({ type: "error", message: "Something went wrong, try again later!" })
         }
     }
@@ -177,7 +178,6 @@ const ReceivedFriendReq = () => {
             setToast({ type: "success", message: "Friend Request Rejected!" })
             setReceivedRequests((prev) => prev.filter((request) => request.id !== friendshipId))
         } catch (err) {
-            console.log(err);
             setToast({ type: "error", message: "Something went wrong, try again later!" })
         }
     }
@@ -194,13 +194,13 @@ const ReceivedFriendReq = () => {
             </p> :
                 <ul className="mt-5 flex flex-col gap-3">
                     {receivedRequests.map((req) => (
-                        <li key={req.id} className="flex bg-gray-800 p-2 rounded-xl items-center w-full">
+                        <li key={req.id} className="flex bg-gray-800 p-2 rounded-xl gap-2 items-center w-full">
                             <div className="flex-1 flex items-center gap-3">
                                 <img src={req.other_user.profile_picture} className="rounded-full size-12" alt="" />
-                                <p>@{req.other_user.username}</p>
+                                <Link className="hover:underline hover:underline-offset-3" to={`/profile/${req.other_user.username}`}>@{req.other_user.username}</Link>
                             </div>
-                            <button className="bg-gray-600 relative p-2 hover:bg-green-800 transition duration-300 rounded-xl mr-2" onClick={() => handleAcceptRequest(req.id)}><UserCheck /></button>
-                            <button className="bg-gray-600 relative p-2 hover:bg-red-700 transition duration-300 rounded-xl" onClick={() => handleRejectRequest(req.id)}><UserX /></button>
+                            <PlainButton type="success" text={<UserCheck />} onClick={() => handleAcceptRequest(req.id)}/>
+                            <PlainButton type="error" text={<UserX />} onClick={() => handleRejectRequest(req.id)}/>
                         </li>
                     ))
                     }
@@ -225,7 +225,6 @@ const SentFriendReq = () => {
                 const res = await friendService.sentRequests();
                 setSentRequests(res);
             } catch (err) {
-                console.error(err);
             } finally {
                 setLoading(false);
             }
@@ -240,7 +239,6 @@ const SentFriendReq = () => {
             setToast({ type: "success", message: "Friend Request Cancelled!" })
             setSentRequests((prev) => prev.filter((request) => request.id !== friendshipId))
         } catch (err) {
-            console.log(err);
             setToast({ type: "error", message: "Something went wrong, try again later!" })
         }
     }
@@ -260,9 +258,9 @@ const SentFriendReq = () => {
                         <li key={req.id} className="flex bg-gray-800 p-2 rounded-xl items-center w-full">
                             <div className="flex-1 flex items-center gap-3">
                                 <img src={req.other_user.profile_picture} className="rounded-full size-12" alt="" />
-                                <p>@{req.other_user.username}</p>
+                                <Link className="hover:underline hover:underline-offset-3" to={`/profile/${req.other_user.username}`}>@{req.other_user.username}</Link>
                             </div>
-                            <button className="bg-gray-600 p-2 hover:bg-gray-700 transition duration-300 rounded-xl" onClick={() => handleCancelRequest(req.id)}>Cancel Request</button>
+                            <PlainButton onClick={()=>handleCancelRequest(req.id)} text={"Cancel Request"}/>
                         </li>
                     ))
                     }
@@ -275,6 +273,7 @@ const SentFriendReq = () => {
 const AllFriends = () => {
     const [friends, setFriends] = useState([]);
     const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
     const [toast, setToast] = useState({
         type: "",
         message: ""
@@ -284,11 +283,8 @@ const AllFriends = () => {
             try {
                 setLoading(true);
                 const res = await friendService.viewAllFriends();
-                console.log(res);
-
                 setFriends(res);
             } catch (err) {
-                console.error(err);
             } finally {
                 setLoading(false);
             }
@@ -302,7 +298,6 @@ const AllFriends = () => {
             setToast({ type: "success", message: "Friend Removed!" })
             setFriends((prev) => prev.filter((request) => request.id !== friendshipId))
         } catch (err) {
-            console.log(err);
             setToast({ type: "error", message: "Something went wrong, try again later!" })
         }
     }
@@ -321,9 +316,9 @@ const AllFriends = () => {
                         <div key={friend.id} className="bg-gray-700 p-2 rounded-xl flex">
                             <div className="flex flex-1 items-center gap-2">
                                 <img src={friend.other_user.profile_picture} className="size-12 rounded-full" alt="" />
-                                <p>@{friend.other_user.username}</p>
+                                <Link className="hover:underline hover:underline-offset-3" to={`/profile/${friend.other_user.username}`}>@{friend.other_user.username}</Link>
                             </div>
-                            <button onClick={() => handleRemoveFriend(friend.id)} className="bg-gray-600 p-2 hover:bg-red-700 transition duration-300 rounded-xl">Remove</button>
+                            <PlainButton onClick={()=>handleRemoveFriend(friend.id)} type="error" text={"Remove"}/>
                         </div>
                     ))}
                 </div>
@@ -344,11 +339,8 @@ const SearchResults = ({ query }) => {
             setLoading(true);
             try {
                 const res = await authService.searchUsers(query);
-                console.log(res)
                 setUsers(res);
             } catch (err) {
-                console.log(err);
-
             } finally {
                 setLoading(false);
             }
@@ -373,7 +365,6 @@ const SearchResults = ({ query }) => {
             });
 
         } catch (err) {
-            console.log(err);
             setToast({
                 type: "error",
                 message: "Something went wrong, try again later!"
@@ -415,18 +406,20 @@ const SearchResults = ({ query }) => {
                                     @{user.user.username}
                                 </p>
 
-                                <p className="font-semibold truncate">
+                                <Link className="hover:underline hover:underline-offset-3" to={`/profile/${user.user.username}`}>{user.full_name}
                                     {user.user.full_name}
-                                </p>
+                                </Link>
 
-                                <button
+                                <Button
                                     onClick={() => handleAddFriend(user.user.id)}
-                                    className="mt-2 rounded-xl bg-blue-600 px-4 py-2 font-medium transition hover:bg-blue-700 active:scale-[0.98] disabled:bg-gray-700"
                                     disabled={user.is_friend || user.request_pending}
-                                >
-                                    {user.is_friend ? "Already Friends" : user.request_pending ? "Request exists" : "Add Friend"}
-                                </button>
-
+                                    Component={
+                                        user.is_friend || user.request_pending
+                                            ? null
+                                            : UserPlus
+                                    }
+                                    text={user.is_friend ? "Already Friends" : user.request_pending ? "Request exists" : "Add Friend"}
+                                />
                             </div>
                         </div>
                     ))}

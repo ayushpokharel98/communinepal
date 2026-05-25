@@ -9,7 +9,9 @@ from .views import (
     ForgotPasswordView,
     ResetPasswordView,
     MeView,
-    UserDetailView,
+    UserDetailIDView,
+    UserDetailUsernameView,
+    ProfileUpdateView,
     UserListView,
     SendFriendRequestView,
     AcceptFriendRequestView,
@@ -23,11 +25,12 @@ from .views import (
 
 urlpatterns = [
     path("me/", MeView.as_view(), name="user"),
-    path("<int:id>/", UserDetailView.as_view(), name="other-user"),
     path("users/", UserListView.as_view(), name="user-search"),
     path("register/", RegisterView.as_view(), name="user-register"),
     path("verify-email/", VerifyEmailView.as_view(), name="verify-email"),
-    path("resend-verification/", ResendVerification.as_view(), name="resend-verification"),
+    path(
+        "resend-verification/", ResendVerification.as_view(), name="resend-verification"
+    ),
     path("token/", LoginView.as_view(), name="login"),
     path("token/refresh/", RefreshView.as_view(), name="token-refresh"),
     path("logout/", LogoutView.as_view(), name="logout"),
@@ -54,11 +57,22 @@ urlpatterns = [
         name="cancel-friend-request",
     ),
     path(
-        "friends/remove/<int:friendship_id>/", RemoveFriendView.as_view(), name="remove-friend"
+        "friends/remove/<int:friendship_id>/",
+        RemoveFriendView.as_view(),
+        name="remove-friend",
     ),
     path("friends/", FriendListView.as_view(), name="friend-list"),
     path(
-        "friends/pending/", PendingFriendRequestsView.as_view(), name="pending-friend-requests"
+        "friends/pending/",
+        PendingFriendRequestsView.as_view(),
+        name="pending-friend-requests",
     ),
-    path("friends/sent/", SentFriendRequestsView.as_view(), name="sent-friend-requests"),
+    path(
+        "friends/sent/", SentFriendRequestsView.as_view(), name="sent-friend-requests"
+    ),
+    path("profile/update/", ProfileUpdateView.as_view(), name="profile-update"),
+    path("<int:id>/", UserDetailIDView.as_view(), name="other-user"),
+    path(
+        "<str:username>/", UserDetailUsernameView.as_view(), name="other-user-username"
+    ),
 ]

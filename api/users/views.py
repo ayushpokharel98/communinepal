@@ -20,6 +20,7 @@ from .serializers import (
     ResetPasswordSerializer,
     UserDetailSerializer,
     FriendshipSerializer,
+    ProfileSerializer
 )
 from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -27,6 +28,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from rest_framework.parsers import MultiPartParser, FormParser
 
 User = get_user_model()
 SAMESITE = settings.JWT_COOKIE_SAMESITE
@@ -213,12 +215,19 @@ class MeView(generics.RetrieveAPIView):
         return self.request.user.profile
 
 
-class UserDetailView(generics.RetrieveAPIView):
+class UserDetailIDView(generics.RetrieveAPIView):
     serializer_class = UserDetailSerializer
     permission_classes = [IsAuthenticated]
 
     def get_object(self, *args, **kwargs):
         return get_object_or_404(Profile, user__id=self.kwargs["id"])
+    
+class UserDetailUsernameView(generics.RetrieveAPIView):
+    serializer_class = UserDetailSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, *args, **kwargs):
+        return get_object_or_404(Profile, user__username=self.kwargs["username"])
 
 
 class UserListView(generics.ListAPIView):
@@ -229,6 +238,14 @@ class UserListView(generics.ListAPIView):
     
     def get_queryset(self):
         return Profile.objects.exclude(user = self.request.user)
+    
+class ProfileUpdateView(generics.RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        return self.request.user.profile
+    
 
 class SendFriendRequestView(APIView):
     permission_classes = [IsAuthenticated]

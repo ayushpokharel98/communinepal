@@ -51,10 +51,15 @@ const authService = {
         return res.data;
     },
 
-    getUserById: async (id) => {
+    getUser: async (id) => {
         const res = await api.get(`/user/${id}/`);
         return res.data;
     },
+    updateProfile: async(data)=>{
+        const res = await api.patch('/user/profile/update/', data,{headers: {'Content-Type':'multipart/form-data'},});
+        return res.data;
+    }
+
 };
 
 export default authService;

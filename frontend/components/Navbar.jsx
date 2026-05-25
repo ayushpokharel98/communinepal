@@ -70,7 +70,7 @@ const Navbar = ({}) => {
         {
           profileClicked && (
             <div className="absolute right-0 sm:right-5 sm:top-18 rounded-md bg-gray-800 text-white  w-full sm:w-xs flex flex-col z-50">
-              <Link className="px-2 py-4 hover:cursor-pointer rounded-t-md hover:bg-gray-700 focus:bg-gray-700 focus:outline-none flex gap-2"><User /> Profile</Link>
+              <Link to={`/profile/${user.user.username}`} className="px-2 py-4 hover:cursor-pointer rounded-t-md hover:bg-gray-700 focus:bg-gray-700 focus:outline-none flex gap-2"><User /> Profile</Link>
               <Link className="px-2 py-4 hover:cursor-pointer hover:bg-gray-700 focus:bg-gray-700 focus:outline-none flex gap-2"><Settings /> Settings</Link>
               <button className="px-2 py-4 hover:cursor-pointer rounded-b-md hover:bg-gray-700 focus:bg-gray-700 focus:outline-none flex gap-2" onClick={() => logout()}><LogOut />Logout</button>
             </div>

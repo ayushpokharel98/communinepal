@@ -65,6 +65,11 @@ class UserDetailSerializer(serializers.ModelSerializer):
             obj.user
         )
         
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["bio", "website", "phone_number", "date_of_birth", "address", "gender", "profile_picture", "cover_picture"]
+        
         
 class FriendshipSerializer(serializers.ModelSerializer):
     other_user = serializers.SerializerMethodField()

@@ -8,6 +8,7 @@ const AuthInput = ({ type, name = type, label, placeholder, error, ...rest }) =>
                 id={name}
                 className="rounded-sm border border-red-400 p-2 placeholder:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder={placeholder}
+                autoComplete="off"
                 {...rest}
 
             />
