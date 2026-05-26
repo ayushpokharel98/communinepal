@@ -48,7 +48,7 @@ const Navbar = ({}) => {
   }, [])
   return (
     <nav className="bg-gray-800 px-3 py-1 flex justify-between items-center fixed w-full top-0 left-0 right-0 border-b border-b-white z-50">
-      <img className="h-12 w-18" src={logo} alt="" />
+      <img className="sm:h-12 sm:w-18 w-15 h-10" src={logo} alt="" />
       <div className="flex items-center gap-2">
         {
           navItems.map(({ title, icon: Icon, path }) => (
@@ -58,7 +58,7 @@ const Navbar = ({}) => {
               to={path}
               
               className={({isActive})=>`relative p-3 rounded-xl transition-all duration-200 hover:bg-gray-700 active:scale-95 ${isActive&&"bg-gray-700 scale-95"}`} >
-              <Icon className="size-7" color="white" />
+              <Icon className="size-5 sm:size-7" color="white" />
             </NavLink>
           ))
         }

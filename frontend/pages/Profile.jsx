@@ -99,7 +99,7 @@ const Profile = () => {
                 />
               </div>
 
-              <div className="mt-20 sm:relative flex items-center justify-between sm:justify-end sm:min-h-24">
+              <div className="mt-20 sm:relative flex-col sm:flex-row flex items-center justify-between sm:justify-end sm:min-h-24">
                 <div className="sm:absolute sm:top-0 sm:left-1/2 sm:-translate-x-1/2 text-center">
                   <h1 className="text-xl w-full sm:text-3xl font-bold text-white text-wrap sm:text-nowrap">
                     {profile.user?.full_name}
@@ -119,6 +119,7 @@ const Profile = () => {
                     <Button
                       text="Edit your Profile"
                       Component={Pen}
+                      className={'px-24 sm:px-4'}
                       onClick={() => setShowEditModal(true)}
                     />
                   ) : (
@@ -138,6 +139,7 @@ const Profile = () => {
                       disabled={
                         profile.is_friend || profile.request_pending
                       }
+                      className={'px-24 sm:px-4'}
                       onClick={() => handleAddFriend(profile.user.id)}
                     />
                   )}
@@ -148,7 +150,6 @@ const Profile = () => {
                 <PlainButton text={"Posts"} className={`mr-2 px-4 ${selectedTab === "posts" && "bg-gray-700"}`} onClick={() => setSelectedTab("posts")} />
                 <PlainButton text={"About"} className={`px-4 ${selectedTab === "about" && "bg-gray-700"}`} onClick={() => setSelectedTab("about")} />
               </div>
-
               {
                 selectedTab === "posts" ? <Posts /> : <About user={profile} />
               }

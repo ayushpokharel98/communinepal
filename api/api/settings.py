@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'phonenumber_field',
     
     'users',
+    'posts'
 ]
 
 MIDDLEWARE = [
