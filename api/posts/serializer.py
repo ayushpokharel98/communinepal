@@ -100,3 +100,15 @@ class CommentSerializer(serializers.Serializer):
         ]
         read_only_fields = ["author", "post", "created_at", "updated_at"]
         
+    def get_author_profile_picture(self, obj):
+        request = self.context.get("request")
+        return request.build_absolute_uri(obj.author.profile.profile_picture.url)
+    
+    def get_replies(self, obj):
+        if obj.parent is None:
+            return CommentSerializer(obj.replies.all(), many=True, context=self.context).data
+        return []
+    
+class CommentCreateSerializer(serializers.Serializer):
+    body = serializers.CharField()
+    parent_id = serializers.UUIDField(required=False, allow_null = True, default=None)
