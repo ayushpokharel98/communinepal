@@ -5,21 +5,21 @@ import AuthInput from '../components/Auth/AuthInput';
 import AuthButton from '../components/Auth/AuthButton';
 import authService from '../services/authService';
 import Toast from '../components/Toast';
+import { useToast } from '../contexts/ToastContext';
 
 const ResendEmail = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState('');
+  const {success} = useToast();
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     await authService.resendVerification(email);
     setLoading(false);
-    setToast("If email exists, mail is sent!")
+    success("If email exists, mail is sent!")
   }
   return (
     <BaseAuthDesign title={"RESEND EMAIL VERIFICATION"}>
-      <Toast message={toast} type='success' setMessage={setToast} />
       <form onSubmit={handleSubmit}>
         <AuthInput 
         label={"Email"}

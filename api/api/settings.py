@@ -178,4 +178,4 @@ CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
-ASGI_APPLICATION = "app.asgi.application"
+ASGI_APPLICATION = "api.asgi.application"

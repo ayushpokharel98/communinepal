@@ -7,46 +7,73 @@ import { Pen, UserPlus } from 'lucide-react';
 import Button from '../components/Button';
 import Loading from '../components/Loading';
 import PlainButton from '../components/PlainButton';
-import Toast from '../components/Toast';
 import friendService from '../services/friendService';
 import Posts from '../components/Posts';
 import About from '../components/About';
 import EditProfileModal from '../components/EditProfileModal';
+import postService from '../services/postService';
+import { useToast } from '../contexts/ToastContext';
 
 const Profile = () => {
   const { username } = useParams();
   const { user, setUser } = useAuth();
   const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(true);
-  const [toast, setToast] = useState({
-    type: "",
-    message: ""
-  });
   const [selectedTab, setSelectedTab] = useState("posts");
   const [showEditModal, setShowEditModal] = useState(false);
+  const [posts, setPosts] = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+  const {success, error} = useToast();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (username === user.user.username) {
-        setProfile(user);
-        setLoading(false);
-        return;
-      };
+
+    const fetchProfileAndPosts = async () => {
 
       try {
+
         setLoading(true);
-        const res = await authService.getUser(username);
-        setProfile(res);
+        setPostsLoading(true);
+
+        let currentProfile;
+
+        if (username === user.user.username) {
+
+          currentProfile = user;
+
+          setProfile(user);
+
+        } else {
+
+          const profileRes = await authService.getUser(username);
+
+          currentProfile = profileRes;
+
+          setProfile(profileRes);
+        }
+
+        const postsRes = await postService.getUserPosts(
+          currentProfile.user.id
+        );
+        
+
+        setPosts(postsRes.results || postsRes);
+
       } catch (err) {
+
+        console.log(err);
+
         setProfile(null);
+
       } finally {
+
         setLoading(false);
+        setPostsLoading(false);
       }
+    };
 
-    }
-    fetchProfile();
+    fetchProfileAndPosts();
 
-  }, [username])
+  }, [username]);
 
   const handleAddFriend = async (userId) => {
     try {
@@ -54,30 +81,23 @@ const Profile = () => {
 
       setProfile({ ...profile, request_pending: true })
 
-      setToast({
-        type: "success",
-        message: "Friend request sent!"
-      });
+      success("Friend Request Sent!");
 
     } catch (err) {
       console.log(err);
 
-      setToast({
-        type: "error",
-        message: "Something went wrong, try again later!"
-      });
+      error("Something went wrong, try again later!");
     }
   };
 
-  const handleProfileSave = ({bio, website, phone_number, date_of_birth, address, cover_picture, gender, profile_picture}) => {
-    setProfile({...profile, bio, website, phone_number, date_of_birth, address, cover_picture, gender, profile_picture});
-    setUser({...user, bio, website, phone_number, date_of_birth, address, cover_picture, gender, profile_picture})
+  const handleProfileSave = ({ bio, website, phone_number, date_of_birth, address, cover_picture, gender, profile_picture }) => {
+    setProfile({ ...profile, bio, website, phone_number, date_of_birth, address, cover_picture, gender, profile_picture });
+    setUser({ ...user, bio, website, phone_number, date_of_birth, address, cover_picture, gender, profile_picture })
   };
 
   return loading ? <Loading type={1} /> : (
     <>
       <Navbar />
-      <Toast type={toast.type} message={toast.message} setMessage={(msg) => setToast({ ...toast, message: msg })} />
       <main className="w-full mt-15 min-h-[calc(100vh-60px)] bg-gray-900 flex justify-center px-4 overflow-auto text-white">
         {
           !profile ? (<div className="w-full min-h-[calc(100vh-60px)] flex items-center justify-center text-gray-400 text-2xl text-center">
@@ -150,9 +170,23 @@ const Profile = () => {
                 <PlainButton text={"Posts"} className={`mr-2 px-4 ${selectedTab === "posts" && "bg-gray-700"}`} onClick={() => setSelectedTab("posts")} />
                 <PlainButton text={"About"} className={`px-4 ${selectedTab === "about" && "bg-gray-700"}`} onClick={() => setSelectedTab("about")} />
               </div>
-              {
-                selectedTab === "posts" ? <Posts /> : <About user={profile} />
-              }
+              {selectedTab === "posts" ? (
+
+                postsLoading ? (
+
+                  <Loading />
+
+                ) : (
+
+                  <Posts posts={posts} />
+
+                )
+
+              ) : (
+
+                <About user={profile} />
+
+              )}
             </div>
           )
         }

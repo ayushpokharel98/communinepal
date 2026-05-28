@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import BaseAuthDesign from '../components/Auth/BaseAuthDesign'
-import Toast from '../components/Toast'
 import { useForm } from "react-hook-form"
 import AuthInput from '../components/Auth/AuthInput'
 import Loading from "../components/Loading"
@@ -9,16 +8,14 @@ import Google from '../src/assets/Google'
 import AuthGoogle from '../components/Auth/AuthGoogle'
 import AuthButton from '../components/Auth/AuthButton'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 
 const Login = () => {
   const { register, formState: { errors, isSubmitting }, handleSubmit } = useForm();
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [toast, setToast] = useState({
-    type: "",
-    message: ""
-  });
+  const {success, error} = useToast();
 
   useState(()=>{
     if(location.state){
@@ -34,11 +31,7 @@ const Login = () => {
       await login(data);
       navigate('/');
     } catch (err) {
-      console.log(err.response?.data || err.response?.data.verification || "Something went wrong, please try again!");
-      setToast({
-        type: "error",
-        message: err.response?.data?.error || err.response?.data?.verification || "Something went wrong, please try again!"
-      })
+      error(err.response?.data?.error || err.response?.data?.verification || "Something went wrong, please try again!");
     }
   }
 

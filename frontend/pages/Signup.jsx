@@ -4,26 +4,20 @@ import { useForm } from 'react-hook-form'
 import authService from '../services/authService';
 import AuthInput from '../components/Auth/AuthInput';
 import Loading from '../components/Loading';
-import Toast from '../components/Toast';
 import Google from '../src/assets/Google'
 import {Link} from 'react-router-dom'
 import AuthGoogle from '../components/Auth/AuthGoogle';
+import { useToast } from '../contexts/ToastContext';
 
 const Signup = () => {
   const { register, handleSubmit, formState: { errors, isSubmitting }, setError, setValues } = useForm();
   const { signup } = authService;
-  const [toast, setToast] = useState({
-    type: "",
-    message: ""
-  });
+  const {success, error} = useToast();
 
   const onSubmit = async (data) => {
     try {
       await signup(data);
-      setToast({
-        type: "success",
-        message: `User ${data.username} created succesfully, check your mail for verification.`
-      })
+      success(`User ${data.username} created succesfully, check your mail for verification.`);
       setValues("");
     } catch (err) {
       const serverErrors = err.response?.data
@@ -34,16 +28,14 @@ const Signup = () => {
             message: values.join("\n")
           })
         })
-        console.log(serverErrors);
 
       } else {
-        setToast({ type: "error", message: "Something went wrong, please try again later!" })
+        error("Something went wrong, please try again later!");
       }
     }
   }
   return (
     <BaseAuthDesign title={"SIGNUP"}>
-      <Toast type={toast.type} message={toast.message} setMessage={(msg) => setToast({ ...toast, message: msg })} />
       {errors.root?.message &&
         <div className='text-center text-xs text-red-600'>
           {errors.root.message}
