@@ -4,6 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 from .services.auth_service import AuthService
 from .services.friend_service import FriendService
+from posts.models import Post
 
 User = get_user_model()
 
@@ -39,8 +40,9 @@ class UserDetailSerializer(serializers.ModelSerializer):
     user = UserSerializer()
     is_friend = serializers.SerializerMethodField()
     request_pending = serializers.SerializerMethodField()
+    posts_count = serializers.SerializerMethodField();
     class Meta:
-        fields = ['user', 'bio', 'phone_number', 'gender', 'address', 'website', 'date_of_birth', 'profile_picture', 'cover_picture', 'is_friend', 'request_pending']
+        fields = ['user', 'bio', 'phone_number', 'gender', 'address', 'website', 'date_of_birth', 'profile_picture', 'cover_picture', 'is_friend', 'request_pending', 'posts_count']
         model = Profile
     
     def get_is_friend(self, obj):
@@ -53,6 +55,12 @@ class UserDetailSerializer(serializers.ModelSerializer):
             request.user,
             obj.user
         )
+    
+    def get_posts_count(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return None
+        return Post.objects.filter(author = request.user).count()
     
     def get_request_pending(self, obj):
         request = self.context.get("request")

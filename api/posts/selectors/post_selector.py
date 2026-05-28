@@ -13,7 +13,7 @@ from ..models import (
     Share,
 )
 
-from users.models import Friendship
+from users.models import Friendship, FriendshipStatus
 
 
 class PostSelector:
@@ -79,7 +79,7 @@ class PostSelector:
 
         friendships = Friendship.objects.filter(
             Q(user1=user) | Q(user2=user),
-            status=Friendship.Status.ACCEPTED,
+            status=FriendshipStatus.ACCEPTED,
         ).values_list("user1_id", "user2_id")
 
         friend_ids = {user.id}
@@ -191,3 +191,9 @@ class PostSelector:
             )
             .order_by("created_at")
         )
+        
+    @staticmethod
+    def get_shares(user_id):
+        return (
+            Share.objects
+            .filter(user_id=user_id).select_related("user","user__profile","post","post__author","post__author__profile").prefetch_related("post__media").order_by("-shared_at"))

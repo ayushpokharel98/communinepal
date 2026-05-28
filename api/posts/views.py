@@ -14,17 +14,17 @@ from .serializer import (
     PostUpdateSerializer,
     CommentSerializer,
     CommentCreateSerializer,
+    ShareSerializer
 )
 
-# ==========================================
-# PAGINATION
-# ==========================================
 
 class FeedPagination(CursorPagination):
-    page_size = 10
+    page_size = 5
     ordering = "-created_at"
 
-
+class SharePagination(CursorPagination):
+    page_size = 5
+    ordering = "-shared_at"
 
 
 class PostListCreateView(generics.ListCreateAPIView):
@@ -208,7 +208,15 @@ class PostShareView(APIView):
             status=status.HTTP_200_OK,
         )
 
-
+class ShareRetrieveView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    
+    serializer_class = ShareSerializer
+    
+    pagination_class = SharePagination
+    
+    def get_queryset(self):
+        return PostSelector.get_shares(self.kwargs["pk"])
 
 
 class CommentListCreateView(generics.ListCreateAPIView):

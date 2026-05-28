@@ -4,6 +4,7 @@ from .models import (
     Post,
     PostMedia,
     Comment,
+    Share
 )
 
 class PostMediaSerializer(serializers.ModelSerializer):
@@ -202,6 +203,25 @@ class PostSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
 
         return (
+            request.build_absolute_uri(profile_picture.url)
+            if request
+            else profile_picture.url
+        )
+        
+class ShareSerializer(serializers.ModelSerializer):
+    post = PostSerializer()
+    shared_author_username = serializers.CharField(source="user.username", read_only = True)
+    shared_author_profile_picture = serializers.SerializerMethodField()
+    class Meta:
+        model = Share
+        fields = ["id", "post", "shared_author_username", "shared_author_profile_picture", "note", "shared_at"]
+    
+    def get_shared_author_profile_picture (self, obj):
+        profile_picture = getattr(obj.user.profile, "profile_picture")
+        if not profile_picture:
+            return None
+        request = self.context.get("request")
+        return(
             request.build_absolute_uri(profile_picture.url)
             if request
             else profile_picture.url

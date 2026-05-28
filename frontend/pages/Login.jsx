@@ -37,7 +37,6 @@ const Login = () => {
 
   return (
     <BaseAuthDesign title={"LOGIN"}>
-      <Toast type={toast.type} message={toast.message} setMessage={(msg) => setToast({ ...toast, message: msg })} />
       <form onSubmit={handleSubmit(onSubmit)}>
         <AuthInput
           label={"Email"}

@@ -13,6 +13,7 @@ import About from '../components/About';
 import EditProfileModal from '../components/EditProfileModal';
 import postService from '../services/postService';
 import { useToast } from '../contexts/ToastContext';
+import Shares from '../components/Shares';
 
 const Profile = () => {
   const { username } = useParams();
@@ -21,53 +22,25 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState("posts");
   const [showEditModal, setShowEditModal] = useState(false);
-  const [posts, setPosts] = useState([]);
-  const [postsLoading, setPostsLoading] = useState(true);
-  const {success, error} = useToast();
+  const { success, error } = useToast();
 
   useEffect(() => {
 
     const fetchProfileAndPosts = async () => {
 
       try {
-
         setLoading(true);
-        setPostsLoading(true);
-
-        let currentProfile;
-
         if (username === user.user.username) {
-
-          currentProfile = user;
-
           setProfile(user);
-
         } else {
-
           const profileRes = await authService.getUser(username);
-
-          currentProfile = profileRes;
-
           setProfile(profileRes);
         }
-
-        const postsRes = await postService.getUserPosts(
-          currentProfile.user.id
-        );
-        
-
-        setPosts(postsRes.results || postsRes);
-
       } catch (err) {
-
         console.log(err);
-
         setProfile(null);
-
       } finally {
-
         setLoading(false);
-        setPostsLoading(false);
       }
     };
 
@@ -165,28 +138,15 @@ const Profile = () => {
                   )}
                 </div>
               </div>
-
+              <p className="text-gray-500 text-center mt-2 text-sm md:text-base">
+                {profile.posts_count} {profile.posts_count === 1 ? "post" : "posts"}
+              </p>
               <div className='flex justify-center mt-3 mb-6'>
                 <PlainButton text={"Posts"} className={`mr-2 px-4 ${selectedTab === "posts" && "bg-gray-700"}`} onClick={() => setSelectedTab("posts")} />
-                <PlainButton text={"About"} className={`px-4 ${selectedTab === "about" && "bg-gray-700"}`} onClick={() => setSelectedTab("about")} />
+                <PlainButton text={"About"} className={`px-4 mr-2 ${selectedTab === "about" && "bg-gray-700"}`} onClick={() => setSelectedTab("about")} />
+                <PlainButton text={"Shares"} className={`px-4 ${selectedTab === "shares" && "bg-gray-700"}`} onClick={() => setSelectedTab("shares")} />
               </div>
-              {selectedTab === "posts" ? (
-
-                postsLoading ? (
-
-                  <Loading />
-
-                ) : (
-
-                  <Posts posts={posts} />
-
-                )
-
-              ) : (
-
-                <About user={profile} />
-
-              )}
+              {selectedTab === "posts" ? <Posts userId={profile.user.id} username={username} type={"profile"} /> : selectedTab==="about" ? (<About user={profile} />) : (<Shares userId={profile.user.id}/>)}
             </div>
           )
         }

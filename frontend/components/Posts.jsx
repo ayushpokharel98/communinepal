@@ -1,10 +1,16 @@
-import { Heart, MessageCircleMore, Share, MoreHorizontal } from "lucide-react";
-import { useState } from "react";
+import { Heart, MessageCircleMore, Share, MoreHorizontal, Construction } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import PlainButton from "./PlainButton";
 import postService from "../services/postService";
 import CreatePost from "./CreatePost";
 import MediaCarousel from "./MediaCarousel";
+import Loading from "./Loading";
+import { useToast } from "../contexts/ToastContext";
+import EditProfileModal from "./EditProfileModal";
+import Button from "./Button";
+import { Link } from "react-router-dom"
+import Comments from "./Comments";
 
 function timeAgo(dateStr) {
   const diff = (Date.now() - new Date(dateStr)) / 1000;
@@ -13,30 +19,6 @@ function timeAgo(dateStr) {
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
   return new Date(dateStr).toLocaleDateString();
-}
-
-function AvatarOrInitials({ src, username, size = 42 }) {
-  const [failed, setFailed] = useState(false);
-  const initials = username?.slice(0, 2).toUpperCase() ?? "??";
-  if (src && !failed) {
-    return (
-      <img
-        src={src}
-        alt={username}
-        onError={() => setFailed(true)}
-        className="rounded-full object-cover shrink-0"
-        style={{ width: size, height: size }}
-      />
-    );
-  }
-  return (
-    <div
-      className="rounded-full flex items-center justify-center shrink-0 bg-blue-100 text-blue-700 font-medium text-sm"
-      style={{ width: size, height: size }}
-    >
-      {initials}
-    </div>
-  );
 }
 
 function MediaGrid({ media }) {
@@ -75,9 +57,78 @@ function MediaGrid({ media }) {
   );
 }
 
-const Posts = ({ posts = [] }) => {
+const Posts = ({ type, userId, username }) => {
   const { user } = useAuth();
-  const [localPosts, setLocalPosts] = useState(posts);
+  const [localPosts, setLocalPosts] = useState([]);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const { success, error } = useToast();
+  const [editPanel, setEditPanel] = useState(null);
+  const [share, setShare] = useState(null);
+  const menuRef = useRef(null);
+  const endRef = useRef(null);
+  const isFetchingRef = useRef(false);
+  const [note, setNote] = useState("");
+  const [commentPostId, setCommentPostId] = useState(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setEditPanel(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside)
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, []);
+
+  const fetchPosts = async (cursor = null) => {
+    if (isFetchingRef.current || (!hasMore && cursor != null)) return;
+
+    isFetchingRef.current = true;
+
+    try {
+      const res = type === "profile" ? await postService.getUserPosts(userId, cursor) : await postService.getFeed(cursor);
+
+      const newPosts = res.results ?? res;
+      const newCursor = res.next ? new URL(res.next).searchParams.get("cursor") : null;
+
+      setLocalPosts((prev) => cursor === null ? newPosts : [...prev, ...newPosts]);
+      setNextCursor(newCursor);
+      setHasMore(!!newCursor);
+    } catch (err) {
+      console.log(err);
+
+      error("Error retrieving posts, please try again later!")
+    } finally {
+      isFetchingRef.current = false;
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    setLocalPosts([]);
+    setNextCursor(null);
+    setHasMore(true);
+    fetchPosts(null);
+  }, [userId])
+
+  useEffect(() => {
+    if (!endRef.current) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore && !isFetchingRef.current) {
+        fetchPosts(nextCursor)
+      }
+    }, { threshold: 0.1 })
+
+    observer.observe(endRef.current);
+
+    return () => observer.disconnect();
+  }, [hasMore, nextCursor])
 
   const handleLike = async (postId) => {
     try {
@@ -89,14 +140,14 @@ const Posts = ({ posts = [] }) => {
             : { ...post, is_liked: result.liked, likes_count: result.likes_count }
         )
       );
-    } catch (error) {
-      console.error(error);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleShare = async (postId) => {
+  const handleShare = async (postId, note = "") => {
     try {
-      const result = await postService.toggleShare(postId);
+      const result = await postService.toggleShare(postId, note);
       setLocalPosts((prev) =>
         prev.map((post) =>
           post.id !== postId
@@ -104,25 +155,28 @@ const Posts = ({ posts = [] }) => {
             : { ...post, is_shared: result.shared, shares_count: result.shares_count }
         )
       );
+      setNote("");
+      setShare(null);
     } catch (error) {
       console.error(error);
     }
   };
 
-  return (
+  return loading ? <Loading /> : (
     <>
-      <CreatePost
-        onPostCreated={(newPost) =>
-          setLocalPosts((prev) => [newPost, ...prev])
-        }
-      />
+      {
+        (user.user?.username === username || type === "main") ? <CreatePost
+          onPostCreated={(newPost) =>
+            setLocalPosts((prev) => [newPost, ...prev])
+          } /> : ""
+      }
 
       {!localPosts.length ? (
         <div className="w-full flex justify-center items-center text-gray-400 mt-5">
           No posts yet.
         </div>
       ) : (
-        <div className="w-full flex flex-col items-center gap-4 py-2">
+        <div className="w-full flex flex-col items-center gap-4 py-2 text-white">
           {localPosts.map((post) => (
             <div
               key={post.id}
@@ -130,23 +184,51 @@ const Posts = ({ posts = [] }) => {
             >
               {/* Header */}
               <div className="flex items-center gap-3 px-4 py-3">
-                <AvatarOrInitials
+                <img
                   src={post.author_profile_picture}
-                  username={post.author_username}
+                  alt={post.author_username}
+                  className="rounded-full object-cover shrink-0 size-12"
                 />
                 <div className="flex flex-col min-w-0">
-                  <p className="font-medium text-white text-sm truncate">
+                  <Link to={`/profile/${post.author_username}`} className="font-medium text-white text-sm truncate hover:underline">
                     {post.author_username}
-                  </p>
+                  </Link>
                   <p className="text-xs text-gray-400">
                     {timeAgo(post.created_at)}
                     <span className="mx-1">·</span>
                     {new Date(post.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                <button className="ml-auto p-1 text-gray-500 hover:text-gray-300 transition-colors rounded-lg hover:bg-gray-700">
-                  <MoreHorizontal size={18} />
-                </button>
+                <div className="ml-auto relative" ref={menuRef}>
+                  <button
+                    onClick={() =>
+                      setEditPanel((prev) => (prev === post.id ? null : post.id))
+                    }
+                    className="p-2 text-gray-400 hover:text-white transition-all rounded-full hover:bg-gray-700"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+
+                  {editPanel === post.id && (
+                    <div className="absolute right-0 top-8 w-44 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-100">
+                      <button
+                        onClick={() => handleEdit(post)}
+                        className="w-full px-4 py-3 text-sm text-left text-gray-200 hover:bg-gray-800 transition-colors flex items-center gap-2"
+                      >
+                        ✏️ Edit post
+                      </button>
+
+                      <div className="h-px bg-gray-700" />
+
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        className="w-full px-4 py-3 text-sm text-left text-red-400 hover:bg-red-500/10 transition-colors flex items-center gap-2"
+                      >
+                        🗑 Delete post
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Caption */}
@@ -183,13 +265,13 @@ const Posts = ({ posts = [] }) => {
                   Like
                 </button>
 
-                <button className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-gray-700 transition-colors">
+                <button onClick={() => setCommentPostId(post.id)} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm text-gray-400 hover:text-white hover:bg-gray-700 transition-colors">
                   <MessageCircleMore size={16} />
                   Comment
                 </button>
 
                 <button
-                  onClick={() => handleShare(post.id)}
+                  onClick={() => post.is_shared ? handleShare(post.id) : setShare((prev) => (prev === post.id) ? null : post.id)}
                   className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm transition-colors hover:bg-gray-700 ${post.is_shared ? "text-blue-400" : "text-gray-400 hover:text-white"
                     }`}
                 >
@@ -197,9 +279,26 @@ const Posts = ({ posts = [] }) => {
                   {post.is_shared ? "Shared" : "Share"}
                 </button>
               </div>
+              {
+                (share === post.id) &&
+                <div className="flex items-center gap-2 px-3 py-1">
+                  <input value={note} onChange={(e) => setNote(e.target.value)} className="w-full placeholder:text-sm border border-gray-500 p-2 rounded-xl" placeholder="What do you have to say about this?" type="text" name="" id="" />
+                  <Button onClick={() => handleShare(post.id, note)} className="mt-0!" text={"Share"} />
+                </div>
+              }
+
             </div>
           ))}
+          <div ref={endRef} className="w-full flex justify-center py-4">
+            {loading && <Loading />}
+            {!hasMore && (
+              <p className="text-gray-600 text-sm flex gap-1 items-center">You have reached the end <Construction /> </p>
+            )}
+          </div>
         </div>
+      )}
+      {commentPostId && (
+        <Comments postId={commentPostId} onClose={() => setCommentPostId(null)} />
       )}
     </>
   );

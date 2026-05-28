@@ -13,6 +13,7 @@ from .views import (
     CommentDeleteView,
     ReplyUpdateView,
     ReplyDeleteView,
+    ShareRetrieveView
 )
 
 urlpatterns = [
@@ -65,6 +66,12 @@ urlpatterns = [
         "<uuid:pk>/share/",
         PostShareView.as_view(),
         name="share",
+    ),
+    
+     path(
+        "user/<int:pk>/shares/",
+        ShareRetrieveView.as_view(),
+        name="user-shares",
     ),
 
     # ==========================================

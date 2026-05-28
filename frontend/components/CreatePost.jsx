@@ -28,7 +28,10 @@ const CreatePost = ({ onPostCreated }) => {
   const handleSelectFiles = (e) => {
 
     const selectedFiles = Array.from(e.target.files || []);
-
+    if(selectedFiles.some((file)=>file.size>50*1048576)){
+      error("Maximum size of 50MB allowed!")
+      return;
+    }
     if (!selectedFiles.length) {
       return;
     }

@@ -11,30 +11,19 @@ const postService = {
 
   async getFeed(cursor = null) {
 
-    const params = {};
+    const params = cursor ? `?cursor=${cursor}` : "";
 
-    if (cursor) {
-      params.cursor = cursor;
-    }
-
-    const response = await api.get("/posts/", {
-      params,
-    });
+    const response = await api.get(`/posts/${params}`);
 
     return response.data;
   },
 
   async getUserPosts(userId, cursor = null) {
 
-    const params = {};
-
-    if (cursor) {
-      params.cursor = cursor;
-    }
+    const params = cursor ? `?cursor=${cursor}` : "";
 
     const response = await api.get(
-      `/posts/user/${userId}/`,
-      { params }
+      `/posts/user/${userId}/${params}`
     );
 
     return response.data;
@@ -128,6 +117,16 @@ const postService = {
     );
 
     return response.data;
+  },
+
+  async getShares(userId, cursor=null) {
+    const params = cursor ? `?cursor=${cursor}` : "";
+
+    const response = await api.get(
+      `/posts/user/${userId}/shares/${params}`
+    );
+
+    return response.data
   },
 
   // ==========================================
