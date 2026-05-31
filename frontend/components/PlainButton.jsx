@@ -7,7 +7,7 @@ const PlainButton = ({ onClick, type = "normal", text, className = "", Component
         share: "hover:bg-blue-400"
     }
     return (
-        <button onClick={onClick} className={`bg-gray-600 p-2 flex gap-2 itmes-center transition duration-300 active:scale-105 rounded-xl ${hoverStyels[type]} ${className}`} disabled={disabled}>{text}{Component && <Component />}</button>
+        <button onClick={onClick} className={`bg-gray-600 text-center p-2 flex gap-2 items-center justify-center transition duration-300 active:scale-105 rounded-xl ${hoverStyels[type]} ${className}`} disabled={disabled}>{text}{Component && <Component />}</button>
     )
 }
 

@@ -60,7 +60,7 @@ class UserDetailSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
             return None
-        return Post.objects.filter(author = request.user).count()
+        return Post.objects.filter(author = request.user, is_deleted = False).count()
     
     def get_request_pending(self, obj):
         request = self.context.get("request")

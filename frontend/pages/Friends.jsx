@@ -315,7 +315,7 @@ const AllFriends = () => {
                     {friends.map((friend) => (
                         <div key={friend.id} className="bg-gray-700 p-2 rounded-xl flex">
                             <div className="flex flex-1 items-center gap-2">
-                                <img src={friend.other_user.profile_picture} className="size-12 rounded-full" alt="" />
+                                <img src={friend.other_user.profile_picture} className="size-12 rounded-full object-cover" alt="" />
                                 <Link className="hover:underline hover:underline-offset-3" to={`/profile/${friend.other_user.username}`}>@{friend.other_user.username}</Link>
                             </div>
                             <PlainButton onClick={()=>handleRemoveFriend(friend.id)} type="error" text={"Remove"}/>

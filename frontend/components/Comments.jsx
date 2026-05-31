@@ -4,15 +4,7 @@ import postService from "../services/postService";
 import { useAuth } from "../contexts/AuthContext";
 import Loading from "./Loading";
 import { Link } from "react-router-dom";
-
-function timeAgo(dateStr) {
-    const diff = (Date.now() - new Date(dateStr)) / 1000;
-    if (diff < 60) return "just now";
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-    if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-    return new Date(dateStr).toLocaleDateString();
-}
+import timeAgo from "../services/timeAgo";
 
 function Avatar({ src, alt, size = "md" }) {
     const sizes = { sm: "size-7", md: "size-9" };
@@ -66,7 +58,6 @@ function CommentItem({ comment, onReply, depth = 0 }) {
                 </div>
             </div>
 
-            {/* Replies */}
             {hasReplies && showReplies && (
                 <div className="ml-12 mt-1 flex flex-col gap-3">
                     {comment.replies.map((reply) => (
@@ -99,9 +90,7 @@ const Comments = ({ postId, onClose }) => {
         cursor ? setLoadingMore(true) : setLoading(true);
 
         try {
-            const res = await postService.getComments(postId, cursor);
-            console.log(res);
-            
+            const res = await postService.getComments(postId, cursor);            
             const newComments = res.results ?? res;
             const newCursor = res.next ? new URL(res.next).searchParams.get("cursor") : null;
             setComments((prev) => (cursor === null ? newComments : [...prev, ...newComments]));
@@ -183,7 +172,6 @@ const Comments = ({ postId, onClose }) => {
         }
     };
 
-    // Close on backdrop click
     const handleOverlayClick = (e) => {
         if (e.target === overlayRef.current) onClose?.();
     };
@@ -207,7 +195,6 @@ const Comments = ({ postId, onClose }) => {
                     </button>
                 </div>
 
-                {/* Comments list */}
                 <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">
                     {loading ? (
                         <div className="flex justify-center items-center py-10">
@@ -230,7 +217,6 @@ const Comments = ({ postId, onClose }) => {
                     )}
                 </div>
 
-                {/* Input area */}
                 <div className="border-t border-gray-700 px-4 py-3 shrink-0">
                     {/* Replying-to banner */}
                     {replyingTo && (

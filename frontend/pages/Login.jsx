@@ -15,14 +15,11 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const {success, error} = useToast();
+  const {success, error, showToast} = useToast();
 
   useState(()=>{
     if(location.state){
-      setToast({
-        type: Object.keys(location.state),
-        message: Object.values(location.state)
-      })
+      showToast(Object.keys(location.state),Object.values(location.state))
     }
   }, [location.state])
 

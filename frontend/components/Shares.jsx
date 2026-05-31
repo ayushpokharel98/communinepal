@@ -1,20 +1,12 @@
 import { Construction, Repeat2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import MediaCarousel from "./MediaCarousel";
+import MediaCarousel from "./Posts/MediaCarousel";
 import Loading from "./Loading";
 import { useToast } from "../contexts/ToastContext";
 import postService from "../services/postService";
 import { Link } from "react-router-dom";
 import Comments from "./Comments";
-
-function timeAgo(dateStr) {
-  const diff = (Date.now() - new Date(dateStr)) / 1000;
-  if (diff < 60) return "just now";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
-  return new Date(dateStr).toLocaleDateString();
-}
+import timeAgo from "../services/timeAgo";
 
 const Shares = ({ userId }) => {
   const [sharedPosts, setSharedPosts] = useState([]);
@@ -83,7 +75,6 @@ const Shares = ({ userId }) => {
               key={share.id}
               className="w-full max-w-xl bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors"
             >
-              {/* Sharer header */}
               <div className="flex items-center gap-3 px-4 py-3">
                 <img
                   src={share.shared_author_profile_picture}
@@ -106,7 +97,6 @@ const Shares = ({ userId }) => {
                 </div>
               </div>
 
-              {/* Sharer's note */}
               {share.note && (
                 <p className="px-4 pb-3 text-gray-200 text-sm leading-relaxed whitespace-pre-wrap wrap-break-word">
                   {share.note}

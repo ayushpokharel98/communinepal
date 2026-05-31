@@ -196,4 +196,4 @@ class PostSelector:
     def get_shares(user_id):
         return (
             Share.objects
-            .filter(user_id=user_id).select_related("user","user__profile","post","post__author","post__author__profile").prefetch_related("post__media").order_by("-shared_at"))
+            .filter(user_id=user_id, post__is_deleted = False).select_related("user","user__profile","post","post__author","post__author__profile").prefetch_related("post__media").order_by("-shared_at"))

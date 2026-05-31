@@ -21,7 +21,6 @@ const MediaCarousel = ({ media }) => {
 
   return (
     <div className="relative overflow-hidden " onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      {/* Track */}
       <div
         className="flex transition-transform duration-300 ease-in-out"
         style={{ transform: `translateX(-${current * 100}%)` }}
@@ -37,7 +36,6 @@ const MediaCarousel = ({ media }) => {
         ))}
       </div>
 
-      {/* Counter badge */}
       {total > 1 && (
         <span className="absolute top-2.5 right-3 bg-black/55 text-white text-xs px-2 py-0.5 rounded-full">
           {current + 1} / {total}
@@ -64,7 +62,6 @@ const MediaCarousel = ({ media }) => {
         </button>
       )}
 
-      {/* Dot indicators */}
       {total > 1 && (
         <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 flex gap-1.5">
           {media.map((_, i) => (
