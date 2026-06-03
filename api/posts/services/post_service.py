@@ -12,6 +12,7 @@ from ..models import (
     Comment,
     Share,
 )
+from notifications.services.notification_service import NotificationService
 
 
 class PostService:
@@ -35,9 +36,7 @@ class PostService:
         types = media_types or []
 
         if len(files) != len(types):
-            raise ValidationError(
-                "uploaded_files and media_types length mismatch."
-            )
+            raise ValidationError("uploaded_files and media_types length mismatch.")
 
         if len(files) > PostService.MAX_MEDIA_FILES:
             raise ValidationError(
@@ -76,9 +75,7 @@ class PostService:
         )
 
         if post.author_id != user.id:
-            raise PermissionDenied(
-                "You can only edit your own posts."
-            )
+            raise PermissionDenied("You can only edit your own posts.")
 
         post.caption = caption
         post.save(update_fields=["caption", "updated_at"])
@@ -94,11 +91,8 @@ class PostService:
         )
 
         if post.author_id != user.id:
-            raise PermissionDenied(
-                "You can only delete your own posts."
-            )
+            raise PermissionDenied("You can only delete your own posts.")
 
-        # Soft delete
         post.is_deleted = True
         post.save(update_fields=["is_deleted"])
 
@@ -130,17 +124,17 @@ class PostService:
                 post=post,
             )
             liked = True
+            NotificationService.post_liked(receiver=post.author, actor=user, post=post)
 
         return {
             "liked": liked,
-            "likes_count": Like.objects.filter(
-                post=post
-            ).count(),
+            "likes_count": Like.objects.filter(post=post).count(),
         }
 
     # =========================
     # COMMENTS
     # =========================
+
 
     @staticmethod
     def add_comment(
@@ -159,7 +153,6 @@ class PostService:
         parent = None
 
         if parent_id:
-
             parent = get_object_or_404(
                 Comment,
                 id=parent_id,
@@ -167,18 +160,34 @@ class PostService:
                 is_deleted=False,
             )
 
-            # Prevent infinite nesting
             if parent.parent is not None:
-                raise ValidationError(
-                    "Only one level of replies is allowed."
-                )
+                raise ValidationError("Only one level of replies is allowed.")
 
-        return Comment.objects.create(
+        comment_object = Comment.objects.create(
             post=post,
             author=author,
             parent=parent,
             body=body,
         )
+
+        if parent:
+            NotificationService.comment(
+                receiver=parent.author,
+                actor=author,
+                post=post,
+                comment=comment_object,
+                is_reply=True,
+            )
+        else:
+            NotificationService.comment(
+                receiver=post.author,
+                actor=author,
+                post=post,
+                comment=comment_object,
+                is_reply=False,
+            )
+
+        return comment_object
 
     @staticmethod
     def update_comment(
@@ -194,16 +203,16 @@ class PostService:
         )
 
         if comment.author_id != user.id:
-            raise PermissionDenied(
-                "You can only edit your own comments."
-            )
+            raise PermissionDenied("You can only edit your own comments.")
 
         comment.body = body
 
-        comment.save(update_fields=[
-            "body",
-            "updated_at",
-        ])
+        comment.save(
+            update_fields=[
+                "body",
+                "updated_at",
+            ]
+        )
 
         return comment
 
@@ -217,9 +226,7 @@ class PostService:
         )
 
         if comment.author_id != user.id:
-            raise PermissionDenied(
-                "You can only delete your own comments."
-            )
+            raise PermissionDenied("You can only delete your own comments.")
 
         # Soft delete
         comment.is_deleted = True
@@ -244,21 +251,19 @@ class PostService:
         )
 
         if reply.parent is None:
-            raise ValidationError(
-                "This is not a reply."
-            )
+            raise ValidationError("This is not a reply.")
 
         if reply.author_id != user.id:
-            raise PermissionDenied(
-                "You can only edit your own replies."
-            )
+            raise PermissionDenied("You can only edit your own replies.")
 
         reply.body = body
 
-        reply.save(update_fields=[
-            "body",
-            "updated_at",
-        ])
+        reply.save(
+            update_fields=[
+                "body",
+                "updated_at",
+            ]
+        )
 
         return reply
 
@@ -272,14 +277,10 @@ class PostService:
         )
 
         if reply.parent is None:
-            raise ValidationError(
-                "This is not a reply."
-            )
+            raise ValidationError("This is not a reply.")
 
         if reply.author_id != user.id:
-            raise PermissionDenied(
-                "You can only delete your own replies."
-            )
+            raise PermissionDenied("You can only delete your own replies.")
 
         reply.is_deleted = True
 
@@ -323,7 +324,5 @@ class PostService:
 
         return {
             "shared": shared,
-            "shares_count": Share.objects.filter(
-                post=post
-            ).count(),
+            "shares_count": Share.objects.filter(post=post).count(),
         }

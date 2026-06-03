@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { X, Send, CornerDownRight, MessageCircleMore } from "lucide-react";
-import postService from "../services/postService";
-import { useAuth } from "../contexts/AuthContext";
-import Loading from "./Loading";
+import postService from "../../services/postService";
+import { useAuth } from "../../contexts/AuthContext";
+import Loading from "../Loading";
 import { Link } from "react-router-dom";
-import timeAgo from "../services/timeAgo";
+import timeAgo from "../../services/timeAgo";
 
 function Avatar({ src, alt, size = "md" }) {
     const sizes = { sm: "size-7", md: "size-9" };

@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Construction } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
-import CreatePost from "./CreatePost";
-import Comments from "./Comments";
+import CreatePost from "./Posts/CreatePost";
+import Comments from "./Posts/Comments";
 import PostCard from "./Posts/PostCard";
 import Loading from "./Loading";
 import postService from "../services/postService";
@@ -28,6 +28,7 @@ const Posts = ({ type, userId, username }) => {
 
   const endRef = useRef(null);
   const isFetchingRef = useRef(false);
+  const islikingRef = useRef(false);
 
   const fetchPosts = async (cursor = null) => {
     if (isFetchingRef.current || (!hasMore && cursor != null)) return;
@@ -79,7 +80,9 @@ const Posts = ({ type, userId, username }) => {
 
 
   const handleLike = async (postId) => {
+    if(islikingRef.current) return;
     try {
+      islikingRef.current = true;
       const result = await postService.toggleLike(postId);
       setLocalPosts((prev) =>
         prev.map((p) =>
@@ -90,6 +93,8 @@ const Posts = ({ type, userId, username }) => {
       );
     } catch (err) {
       console.error(err);
+    }finally{
+      islikingRef.current = false;
     }
   };
 

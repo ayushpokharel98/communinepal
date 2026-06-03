@@ -16,7 +16,6 @@ class Post(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="posts",
-        db_index=True,
     )
 
     caption = models.TextField(
@@ -26,7 +25,6 @@ class Post(models.Model):
 
     created_at = models.DateTimeField(
         auto_now_add=True,
-        db_index=True,
     )
 
     updated_at = models.DateTimeField(
@@ -82,7 +80,6 @@ class PostMedia(models.Model):
         Post,
         on_delete=models.CASCADE,
         related_name="media",
-        db_index=True,
     )
 
     file = models.FileField(
@@ -92,7 +89,6 @@ class PostMedia(models.Model):
     media_type = models.CharField(
         max_length=10,
         choices=MediaType.choices,
-        db_index=True,
     )
 
     thumbnail = models.ImageField(
@@ -132,19 +128,16 @@ class Like(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="likes",
-        db_index=True,
     )
 
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
         related_name="likes",
-        db_index=True,
     )
 
     created_at = models.DateTimeField(
         auto_now_add=True,
-        db_index=True,
     )
 
     class Meta:
@@ -177,14 +170,12 @@ class Comment(models.Model):
         Post,
         on_delete=models.CASCADE,
         related_name="comments",
-        db_index=True,
     )
 
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="comments",
-        db_index=True,
     )
 
     parent = models.ForeignKey(
@@ -193,14 +184,12 @@ class Comment(models.Model):
         related_name="replies",
         null=True,
         blank=True,
-        db_index=True,
     )
 
     body = models.TextField(max_length=2000)
 
     created_at = models.DateTimeField(
         auto_now_add=True,
-        db_index=True,
     )
 
     updated_at = models.DateTimeField(auto_now=True)
@@ -235,14 +224,12 @@ class Share(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="shares",
-        db_index=True,
     )
 
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
         related_name="shares",
-        db_index=True,
     )
 
     note = models.TextField(
@@ -252,7 +239,6 @@ class Share(models.Model):
 
     shared_at = models.DateTimeField(
         auto_now_add=True,
-        db_index=True,
     )
 
     class Meta:

@@ -48,7 +48,8 @@ INSTALLED_APPS = [
     'phonenumber_field',
     
     'users',
-    'posts'
+    'posts',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -179,3 +180,14 @@ CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 ASGI_APPLICATION = "api.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
+
+SITE_URL = "http://localhost:8000"

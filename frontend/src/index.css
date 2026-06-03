@@ -1,4 +1,7 @@
 @import "tailwindcss";
+*{
+  scrollbar-color: rgb(255, 8, 8);
+}
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -64,4 +67,30 @@
   border-radius: 20%;
   z-index: 50;
   left: 0;
+}
+
+@keyframes notification-slide {
+    0% {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+
+    10% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    90% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+}
+
+.animate-notification {
+    animation: notification-slide 5s ease forwards;
 }

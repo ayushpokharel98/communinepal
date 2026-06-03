@@ -6,9 +6,9 @@ import {
 
 import { useRef, useState } from "react";
 
-import postService from "../services/postService";
-import Loading from "./Loading";
-import { useToast } from "../contexts/ToastContext";
+import postService from "../../services/postService";
+import Loading from "../Loading";
+import { useToast } from "../../contexts/ToastContext";
 
 
 const CreatePost = ({ onPostCreated }) => {

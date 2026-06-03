@@ -14,7 +14,7 @@ const PostCaption = ({ post, editingPost, editingCaption, setEditingCaption, onU
           <textarea
             value={editingCaption}
             onChange={(e) => setEditingCaption(e.target.value)}
-            maxLength={200}
+            maxLength={500}
             rows={1}
             className="flex-1 p-3 rounded-xl bg-gray-900 border border-gray-600 text-sm text-white resize-none focus:outline-none focus:border-blue-500"
           />
@@ -36,7 +36,7 @@ const PostCaption = ({ post, editingPost, editingCaption, setEditingCaption, onU
       {post.caption.length > 120 && (
         <button
           onClick={() => setExpanded((prev) => !prev)}
-          className="mt-1 text-sm text-blue-400 hover:text-blue-300"
+          className="mt-1 text-sm text-blue-400 hover:text-blue-300 hover:underline"
         >
           {expanded ? "Show less" : "Read more"}
         </button>

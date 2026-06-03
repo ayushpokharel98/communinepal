@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import Navbar from '../components/Navbar';
-import CreatePost from '../components/CreatePost';
+import CreatePost from '../components/Posts/CreatePost';
 import Posts from '../components/Posts';
 
 const Home = () => {

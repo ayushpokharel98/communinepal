@@ -5,7 +5,7 @@ import Loading from "./Loading";
 import { useToast } from "../contexts/ToastContext";
 import postService from "../services/postService";
 import { Link } from "react-router-dom";
-import Comments from "./Comments";
+import Comments from "./Posts/Comments";
 import timeAgo from "../services/timeAgo";
 
 const Shares = ({ userId }) => {
