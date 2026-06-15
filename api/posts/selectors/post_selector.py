@@ -116,42 +116,8 @@ class PostSelector:
 
     @staticmethod
     def get_post_by_id(*, post_id, user=None):
-
-        comments_queryset = (
-            Comment.objects
-            .filter(
-                is_deleted=False,
-                parent=None,
-            )
-            .select_related(
-                "author",
-                "author__profile",
-            )
-            .prefetch_related(
-                Prefetch(
-                    "replies",
-                    queryset=(
-                        Comment.objects
-                        .filter(is_deleted=False)
-                        .select_related(
-                            "author",
-                            "author__profile",
-                        )
-                        .order_by("created_at")
-                    ),
-                )
-            )
-            .order_by("created_at")
-        )
-
         return (
             PostSelector.base_post_queryset(user=user)
-            .prefetch_related(
-                Prefetch(
-                    "comments",
-                    queryset=comments_queryset,
-                )
-            )
             .get(id=post_id)
         )
 

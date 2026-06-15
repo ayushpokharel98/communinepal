@@ -1,6 +1,7 @@
 from rest_framework.exceptions import ValidationError
 from ..models import Friendship, FriendshipStatus
 from django.db.models import Q
+from notifications.services.notification_service import NotificationService
 
 
 def normalize_users(user_a, user_b):
@@ -32,6 +33,7 @@ class FriendService:
             requested_by=sender,
             status=FriendshipStatus.PENDING,
         )
+        NotificationService.friend_request(sender=sender, receiver=receiver)
 
         return friendship
 
@@ -53,7 +55,7 @@ class FriendService:
 
         friendship.status = FriendshipStatus.ACCEPTED
         friendship.save(update_fields=["status"])
-
+        NotificationService.friend_accepted(accepter=user, receiver=friendship.requested_by)
         return friendship
 
     @staticmethod

@@ -24,6 +24,7 @@ const PostCard = ({
   onEditSubmit,
   onCancelEdit,
   onDelete,
+  single
 }) => {
   return (
     <div className="w-full max-w-xl bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 hover:border-gray-600 transition-colors">
@@ -58,6 +59,7 @@ const PostCard = ({
         onLike={onLike}
         onComment={onComment}
         onShare={onShareToggle}
+        single = {single}
       />
 
       {sharePostId === post.id && (

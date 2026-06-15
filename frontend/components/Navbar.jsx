@@ -10,6 +10,8 @@ import { useNotifications } from "../contexts/NotificationContext";
 const Navbar = ({ }) => {
   const { user, logout } = useAuth();
   const {notifications, unreadCount} = useNotifications();
+  console.log(notifications);
+  
 
   const [profileClicked, setProfileClicked] = useState(false);
 
@@ -84,6 +86,7 @@ const Navbar = ({ }) => {
                     onClick={() =>
                       setShowNotifications((prev) => !prev)
                     }
+                    data-title = {title}
                     className="relative p-3 rounded-xl hover:bg-gray-700"
                   >
                     <Bell
@@ -126,7 +129,7 @@ const Navbar = ({ }) => {
         </div>
         {
           profileClicked && (
-            <div className="absolute right-0 sm:right-5 sm:top-18 rounded-md bg-gray-800 text-white  w-full sm:border sm:border-gray-700 sm:w-xs flex flex-col z-50">
+            <div className="absolute right-0 sm:right-5 sm:top-18 rounded-md bg-gray-800 text-white  w-full border-b sm:border sm:border-gray-700 sm:w-xs flex flex-col z-50">
               <Link to={`/profile/${user.user.username}`} className="px-2 py-4 hover:cursor-pointer rounded-t-md hover:bg-gray-700 focus:bg-gray-700 focus:outline-none flex gap-2"><User /> Profile</Link>
               <Link className="px-2 py-4 hover:cursor-pointer hover:bg-gray-700 focus:bg-gray-700 focus:outline-none flex gap-2"><Settings /> Settings</Link>
               <button className="px-2 py-4 hover:cursor-pointer rounded-b-md hover:bg-gray-700 focus:bg-gray-700 focus:outline-none flex gap-2" onClick={() => logout()}><LogOut />Logout</button>

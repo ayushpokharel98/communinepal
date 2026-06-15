@@ -13,7 +13,7 @@ from ..models import (
     Share,
 )
 from notifications.services.notification_service import NotificationService
-
+from .permission_service import PermissionService
 
 class PostService:
 
@@ -74,8 +74,7 @@ class PostService:
             is_deleted=False,
         )
 
-        if post.author_id != user.id:
-            raise PermissionDenied("You can only edit your own posts.")
+        PermissionService.check_permission(post, user)
 
         post.caption = caption
         post.save(update_fields=["caption", "updated_at"])
@@ -90,8 +89,8 @@ class PostService:
             is_deleted=False,
         )
 
-        if post.author_id != user.id:
-            raise PermissionDenied("You can only delete your own posts.")
+        PermissionService.check_permission(post, user)
+
 
         post.is_deleted = True
         post.save(update_fields=["is_deleted"])
@@ -202,8 +201,7 @@ class PostService:
             is_deleted=False,
         )
 
-        if comment.author_id != user.id:
-            raise PermissionDenied("You can only edit your own comments.")
+        PermissionService.check_permission(comment, user)
 
         comment.body = body
 
@@ -225,10 +223,8 @@ class PostService:
             is_deleted=False,
         )
 
-        if comment.author_id != user.id:
-            raise PermissionDenied("You can only delete your own comments.")
+        PermissionService.check_permission(comment, user)
 
-        # Soft delete
         comment.is_deleted = True
 
         comment.save(update_fields=["is_deleted"])
@@ -253,8 +249,7 @@ class PostService:
         if reply.parent is None:
             raise ValidationError("This is not a reply.")
 
-        if reply.author_id != user.id:
-            raise PermissionDenied("You can only edit your own replies.")
+        PermissionService.check_permission(reply, user)
 
         reply.body = body
 
@@ -279,8 +274,7 @@ class PostService:
         if reply.parent is None:
             raise ValidationError("This is not a reply.")
 
-        if reply.author_id != user.id:
-            raise PermissionDenied("You can only delete your own replies.")
+        PermissionService.check_permission(reply, user)
 
         reply.is_deleted = True
 

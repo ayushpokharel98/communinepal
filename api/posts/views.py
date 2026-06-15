@@ -9,7 +9,6 @@ from .selectors.post_selector import PostSelector
 
 from .serializer import (
     PostSerializer,
-    PostDetailSerializer,
     PostCreateSerializer,
     PostUpdateSerializer,
     CommentSerializer,
@@ -102,7 +101,7 @@ class PostDetailView(generics.RetrieveAPIView):
 
     permission_classes = [IsAuthenticated]
 
-    serializer_class = PostDetailSerializer
+    serializer_class = PostSerializer
 
     lookup_field = "id"
 

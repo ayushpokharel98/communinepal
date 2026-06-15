@@ -69,7 +69,7 @@ function CommentItem({ comment, onReply, depth = 0 }) {
     );
 }
 
-const Comments = ({ postId, onClose }) => {
+const Comments = ({ postId, onClose, type = "overlay" }) => {
     const { user } = useAuth();
     const [comments, setComments] = useState([]);
     const [nextCursor, setNextCursor] = useState(null);
@@ -78,11 +78,16 @@ const Comments = ({ postId, onClose }) => {
     const [loadingMore, setLoadingMore] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [body, setBody] = useState("");
-    const [replyingTo, setReplyingTo] = useState(null); // { id, author_username }
+    const [replyingTo, setReplyingTo] = useState(null);
     const isFetchingRef = useRef(false);
     const endRef = useRef(null);
     const inputRef = useRef(null);
     const overlayRef = useRef(null);
+
+    const styles = {
+        overlay: "fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm",
+        main: "w-full max-w-xl"
+    }
 
     const fetchComments = async (cursor = null) => {
         if (isFetchingRef.current || (!hasMore && cursor !== null)) return;
@@ -90,7 +95,7 @@ const Comments = ({ postId, onClose }) => {
         cursor ? setLoadingMore(true) : setLoading(true);
 
         try {
-            const res = await postService.getComments(postId, cursor);            
+            const res = await postService.getComments(postId, cursor);
             const newComments = res.results ?? res;
             const newCursor = res.next ? new URL(res.next).searchParams.get("cursor") : null;
             setComments((prev) => (cursor === null ? newComments : [...prev, ...newComments]));
@@ -123,7 +128,7 @@ const Comments = ({ postId, onClose }) => {
         return () => observer.disconnect();
     }, [hasMore, nextCursor]);
 
-    const handleReply = (comment) => {        
+    const handleReply = (comment) => {
         setReplyingTo(comment);
         setBody(`@${comment.author_username} `);
         inputRef.current?.focus();
@@ -180,19 +185,23 @@ const Comments = ({ postId, onClose }) => {
         <div
             ref={overlayRef}
             onClick={handleOverlayClick}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm"
+            className={styles[type]}
         >
-            <div className="w-full sm:max-w-lg bg-gray-900 sm:rounded-2xl rounded-t-2xl border border-gray-700 shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[75vh]">
+            <div className={`w-full ${type === "overlay" && "max-w-lg"} bg-gray-900 sm:rounded-2xl rounded-t-2xl border border-gray-700 shadow-2xl flex flex-col max-h-[80vh] sm:max-h-[70vh]`}>
 
-                {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700 shrink-0">
                     <h2 className="text-white font-semibold text-base">Comments</h2>
-                    <button
-                        onClick={onClose}
-                        className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full transition-colors"
-                    >
-                        <X size={18} />
-                    </button>
+                    {
+                        type === "overlay" && (
+                            <button
+                                onClick={onClose}
+                                className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full transition-colors"
+                            >
+                                <X size={18} />
+                            </button>
+
+                        )
+                    }
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-4">

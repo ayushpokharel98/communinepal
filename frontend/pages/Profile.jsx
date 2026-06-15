@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
-import { useParams } from 'react-router-dom'
+import { useParams, Outlet, NavLink } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext';
 import authService from '../services/authService';
 import { Pen, UserPlus } from 'lucide-react';
@@ -20,7 +20,6 @@ const Profile = () => {
   const { user, setUser } = useAuth();
   const [profile, setProfile] = useState({});
   const [loading, setLoading] = useState(true);
-  const [selectedTab, setSelectedTab] = useState("posts");
   const [showEditModal, setShowEditModal] = useState(false);
   const { success, error } = useToast();
 
@@ -141,13 +140,44 @@ const Profile = () => {
               <p className="text-gray-500 text-center mt-2 text-sm md:text-base">
                 {profile.posts_count} {profile.posts_count === 1 ? "post" : "posts"}
               </p>
-              <div className='flex justify-center mt-3 mb-6'>
-                <PlainButton text={"Posts"} className={`mr-2 px-4 ${selectedTab === "posts" && "bg-gray-700"}`} onClick={() => setSelectedTab("posts")} />
-                <PlainButton text={"About"} className={`px-4 mr-2 ${selectedTab === "about" && "bg-gray-700"}`} onClick={() => setSelectedTab("about")} />
-                <PlainButton text={"Shares"} className={`px-4 ${selectedTab === "shares" && "bg-gray-700"}`} onClick={() => setSelectedTab("shares")} />
+              <div className="flex justify-center mt-3 mb-6 gap-2">
+                <NavLink
+                  end
+                  to={`/profile/${username}`}
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-lg ${isActive ? "bg-gray-700" : "bg-gray-800"
+                    }`
+                  }
+                >
+                  Posts
+                </NavLink>
+
+                <NavLink
+                  to={`/profile/${username}/about`}
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-lg ${isActive ? "bg-gray-700" : "bg-gray-800"
+                    }`
+                  }
+                >
+                  About
+                </NavLink>
+
+                <NavLink
+                  to={`/profile/${username}/shares`}
+                  className={({ isActive }) =>
+                    `px-4 py-2 rounded-lg ${isActive ? "bg-gray-700" : "bg-gray-800"
+                    }`
+                  }
+                >
+                  Shares
+                </NavLink>
               </div>
-              {selectedTab === "posts" ? <Posts userId={profile.user.id} username={username} type={"profile"} /> : selectedTab==="about" ? (<About user={profile} />) : (<Shares userId={profile.user.id}/>)}
-            </div>
+              <Outlet
+                context={{
+                  profile,
+                  username,
+                }}
+              />            </div>
           )
         }
 

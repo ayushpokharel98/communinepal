@@ -4,7 +4,7 @@ const PostShareInput = ({ note, onNoteChange, onShare }) => (
     <input
       value={note}
       onChange={(e) => onNoteChange(e.target.value)}
-      className="w-full placeholder:text-sm border border-gray-500 p-2 rounded-xl"
+      className="w-full placeholder:text-sm border border-gray-500 p-2 rounded-xl text-white"
       placeholder="What do you have to say about this?"
       type="text"
     />

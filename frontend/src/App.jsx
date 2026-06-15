@@ -17,6 +17,10 @@ import ResetPassword from "../pages/ResetPassword";
 import Friends from "../pages/Friends";
 import Message from "../pages/Message";
 import Profile from "../pages/Profile";
+import SinglePost from "../pages/SinglePost";
+import ProfilePosts from "../components/Profile/ProfilePosts";
+import ProfileAbout from "../components/Profile/ProfileAbout";
+import ProfileShares from "../components/Profile/ProfileShares";
 
 const ProtectedLayout = () => {
   return (
@@ -84,7 +88,12 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="/friends" element={<Friends />} />
               <Route path="/message" element={<Message />} />
-              <Route path="/profile/:username" element={<Profile />} />
+              <Route path="/profile/:username" element={<Profile />}> 
+                <Route index element={<ProfilePosts />} />
+                <Route path="about" element={<ProfileAbout />} />
+                <Route path="shares" element={<ProfileShares />} />
+              </Route>
+              <Route path="/post/:postId" element={<SinglePost />} />
             </Route>
 
           </Routes>

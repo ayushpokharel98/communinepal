@@ -3,9 +3,10 @@ import logging
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from notifications.serializers import NotificationSerializer
-
 from notifications.models import Notification
+from posts.services.permission_service import PermissionService
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +72,9 @@ class NotificationService:
             actor=sender,
             notification_type=Notification.NotificationType.FRIEND_REQUEST,
             title="Friend Request",
-            message=f"{sender.username} sent you a friend request.",
+            message=f"@{sender.username} sent you a friend request.",
             data={
-                "user_id": str(sender.id),
+                "username": sender.username,
             },
         )
 
@@ -89,9 +90,9 @@ class NotificationService:
             actor=accepter,
             notification_type=Notification.NotificationType.FRIEND_ACCEPTED,
             title="Friend Request Accepted",
-            message=f"{accepter.username} accepted your friend request.",
+            message=f"@{accepter.username} accepted your friend request.",
             data={
-                "user_id": str(accepter.id),
+                "username": accepter.username,
             },
         )
 
@@ -211,3 +212,26 @@ class NotificationService:
             message=message,
             data=data or {},
         )
+    
+    @staticmethod
+    def markAsRead(notification_id, user):
+        notification = get_object_or_404(Notification, id=notification_id, is_read=False)
+        PermissionService.check_permission(notification, user, owner_field="receiver")
+        notification.is_read = True
+        notification.save(update_fields=["is_read"])
+        
+        return notification
+    
+    @staticmethod
+    def markAllAsRead(user):
+        Notification.objects.filter(receiver=user, is_read=False).update(is_read=True)
+    
+    @staticmethod
+    def deleteNotification(notification_id, user):
+        notification = get_object_or_404(Notification, id=notification_id)
+        PermissionService.check_permission(notification, user, owner_field="receiver")
+        notification.delete()
+    
+    @staticmethod
+    def deleteAllNotifications(user):
+        Notification.objects.filter(receiver=user).delete()

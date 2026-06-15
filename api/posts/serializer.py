@@ -228,20 +228,6 @@ class ShareSerializer(serializers.ModelSerializer):
         )
 
 
-class PostDetailSerializer(PostSerializer):
-
-    comments = CommentSerializer(
-        many=True,
-        read_only=True,
-    )
-
-    class Meta(PostSerializer.Meta):
-
-        fields = PostSerializer.Meta.fields + [
-            "comments",
-        ]
-
-
 class PostCreateSerializer(serializers.Serializer):
 
     caption = serializers.CharField(
