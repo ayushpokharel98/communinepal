@@ -4,17 +4,17 @@ import { Check, X } from "lucide-react";
 import notificationService from "../services/notificationService";
 import { useToast } from "../contexts/ToastContext";
 import { useNotifications } from "../contexts/NotificationContext";
-const NotificationItem = ({ notification }) => {
-
+const NotificationItem = ({ notification }) => {  
   const { error } = useToast();
-  const { setNotifications } = useNotifications();
+  const { setNotifications, setUnreadCount } = useNotifications();
   const notificationType = notification.notification_type;
-  const redirectLink = (notificationType === "post" || notificationType === "post_liked" || notificationType === "comment") ? `/post/${notification.data.post_id}` : (notificationType === "friend_request") ? "/friends" : "";
+  const redirectLink = (notificationType === "post" || notificationType === "post_liked" || notificationType === "comment") ? `/post/${notification.data.post_id}` : (notificationType === "friend_request" || notificationType === "friend_accepted") ? "/friends" : "";
   const handleMarkRead = async (id) => {
+    if(notification.is_read) return;
     try {
       await notificationService.markAsRead(id);
       setNotifications((prev) => prev.map((p) => p.id !== notification.id ? p : { ...p, is_read: true }));
-
+      setUnreadCount((prev)=>prev-1);
     } catch {
       error("Error marking read, please try again later!")
     }
@@ -31,6 +31,7 @@ const NotificationItem = ({ notification }) => {
     <div
       className={`flex items-center gap-3 p-3 transition hover:bg-gray-700
       ${!notification.is_read ? "bg-gray-800/50" : ""}`}
+      onMouseEnter={()=>handleMarkRead(notification.id)}
     >
       <Link to={`/profile/${notification.actor_username}`}>
         <img
@@ -43,7 +44,7 @@ const NotificationItem = ({ notification }) => {
       <div className="flex-1 min-w-0">
         {
           (redirectLink) ? (
-            <Link to={redirectLink} className="text-sm hover:underline hover:underline-offset-1">
+            <Link to={redirectLink} className="text-sm hover:underline hover:underline-offset-1" state={notificationType==="friend_accepted" ? "friends" : ""}>
               {notification.message}
             </Link>) : (
             <p className="text-sm">

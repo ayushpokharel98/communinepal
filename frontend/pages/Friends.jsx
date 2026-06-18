@@ -10,12 +10,18 @@ import authService from "../services/authService";
 import friendService from "../services/friendService";
 import Loading from "../components/Loading";
 import Toast from "../components/Toast";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/Button";
 import PlainButton from "../components/PlainButton";
 
 const Friends = () => {
+    const location = useLocation();
     const [selectedTab, setSelectedTab] = useState("received");
+    useEffect(() => {
+        if (location.state) {
+            setSelectedTab(location.state);            
+        }
+    }, [location.state])
     const [query, setQuery] = useState("");
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -199,8 +205,8 @@ const ReceivedFriendReq = () => {
                                 <img src={req.other_user.profile_picture} className="rounded-full size-12" alt="" />
                                 <Link className="hover:underline hover:underline-offset-3" to={`/profile/${req.other_user.username}`}>@{req.other_user.username}</Link>
                             </div>
-                            <PlainButton type="success" text={<UserCheck />} onClick={() => handleAcceptRequest(req.id)}/>
-                            <PlainButton type="error" text={<UserX />} onClick={() => handleRejectRequest(req.id)}/>
+                            <PlainButton type="success" text={<UserCheck />} onClick={() => handleAcceptRequest(req.id)} />
+                            <PlainButton type="error" text={<UserX />} onClick={() => handleRejectRequest(req.id)} />
                         </li>
                     ))
                     }
@@ -260,7 +266,7 @@ const SentFriendReq = () => {
                                 <img src={req.other_user.profile_picture} className="rounded-full size-12" alt="" />
                                 <Link className="hover:underline hover:underline-offset-3" to={`/profile/${req.other_user.username}`}>@{req.other_user.username}</Link>
                             </div>
-                            <PlainButton onClick={()=>handleCancelRequest(req.id)} text={"Cancel Request"}/>
+                            <PlainButton onClick={() => handleCancelRequest(req.id)} text={"Cancel Request"} />
                         </li>
                     ))
                     }
@@ -318,7 +324,7 @@ const AllFriends = () => {
                                 <img src={friend.other_user.profile_picture} className="size-12 rounded-full object-cover" alt="" />
                                 <Link className="hover:underline hover:underline-offset-3" to={`/profile/${friend.other_user.username}`}>@{friend.other_user.username}</Link>
                             </div>
-                            <PlainButton onClick={()=>handleRemoveFriend(friend.id)} type="error" text={"Remove"}/>
+                            <PlainButton onClick={() => handleRemoveFriend(friend.id)} type="error" text={"Remove"} />
                         </div>
                     ))}
                 </div>

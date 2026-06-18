@@ -10,7 +10,6 @@ import { useNotifications } from "../contexts/NotificationContext";
 const Navbar = ({ }) => {
   const { user, logout } = useAuth();
   const {notifications, unreadCount} = useNotifications();
-  console.log(notifications);
   
 
   const [profileClicked, setProfileClicked] = useState(false);
@@ -87,7 +86,7 @@ const Navbar = ({ }) => {
                       setShowNotifications((prev) => !prev)
                     }
                     data-title = {title}
-                    className="relative p-3 rounded-xl hover:bg-gray-700"
+                    className={`relative p-3 rounded-xl hover:bg-gray-700 transition-colors duration-700 ${showNotifications && "bg-gray-700 scale-95"}`}
                   >
                     <Bell
                       className="size-5 sm:size-7"

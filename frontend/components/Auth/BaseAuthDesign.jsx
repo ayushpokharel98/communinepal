@@ -3,7 +3,7 @@ import Logo from "../../src/assets/images/logo.png"
 
 const BaseAuthDesign = ({ title, children }) => {
     return (
-        <div className="flex h-screen w-full items-center justify-center bg-linear-to-r from-red-500/80 via-indigo-400 to-blue-500">
+        <div className="flex min-h-screen w-full items-center justify-center bg-linear-to-r from-red-500/80 via-indigo-400 to-blue-500 px-2">
             <div className="main w-full max-w-md rounded-xl bg-white px-4 py-8 shadow-xl">
                 <div className="top text-center text-xl font-semibold">
                     <Link to={"/"} className="text-blue-600 flex justify-center">
