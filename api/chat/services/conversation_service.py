@@ -1,4 +1,4 @@
-from messages.models import Conversation
+from chat.models import Conversation
 class ConversationService:
     @staticmethod
     def get_or_create_conversation(user1, user2):

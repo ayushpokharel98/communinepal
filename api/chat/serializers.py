@@ -17,6 +17,7 @@ class MessageSerializer(serializers.ModelSerializer):
 class ConversationSerializer(serializers.ModelSerializer):
     members = UserBasicSerializer(many = True)
     last_message = serializers.SerializerMethodField()
+    other_user = serializers.SerializerMethodField()
     class Meta:
         model = Conversation
         fields = ["id", "members", "created_at", "updated_at"]
@@ -28,6 +29,18 @@ class ConversationSerializer(serializers.ModelSerializer):
             return None
         
         return MessageSerializer(message).data
+
+    def get_other_user(self, obj):
+        request = self.context["request"]
+        other_user = obj.members.exclude(id=request.user.id).select_related("profile").first()
+        if not other_user:
+            return None
+        return {
+            "id": other_user.id,
+            "username": other_user.username,
+            "full_name": other_user.full_name,
+            "profile_picture": request.build_absolute_uri(other_user.profile.profile_picture.url)
+        }
     
 class ConversationCreateSerializer(serializers.Serializer):
     username = serializers.CharField()

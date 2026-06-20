@@ -11,6 +11,9 @@ class Conversation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
+    def __str__(self):
+        return f"Conversation between {self.members.all()}"
+    
 class Message(models.Model):
     id = models.UUIDField(primary_key=True, editable=False, default=uuid.uuid4)
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name="messages")

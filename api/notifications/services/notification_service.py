@@ -15,7 +15,8 @@ class NotificationService:
 
     @classmethod
     def send(cls, notification):
-        serializer = NotificationSerializer(notification)
+        n = Notification.objects.select_related("actor").get(id=notification.id)
+        serializer = NotificationSerializer(n)
         channel_layer = get_channel_layer()
 
         if not channel_layer:

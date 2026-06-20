@@ -1,4 +1,4 @@
-from messages.models import Conversation
+from chat.models import Conversation
 from django.shortcuts import get_object_or_404
 class MessageSelector:
     @staticmethod
