@@ -13,13 +13,14 @@ from .serializer import (
     PostUpdateSerializer,
     CommentSerializer,
     CommentCreateSerializer,
-    ShareSerializer
+    ShareSerializer,
 )
 
 
 class FeedPagination(CursorPagination):
     page_size = 5
     ordering = "-created_at"
+
 
 class SharePagination(CursorPagination):
     page_size = 5
@@ -34,9 +35,7 @@ class PostListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
 
-        return PostSelector.get_feed(
-            user=self.request.user
-        )
+        return PostSelector.get_feed(user=self.request.user)
 
     def get_serializer_class(self):
 
@@ -53,9 +52,7 @@ class PostListCreateView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
 
-        serializer = PostCreateSerializer(
-            data=request.data
-        )
+        serializer = PostCreateSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
@@ -129,9 +126,7 @@ class PostUpdateView(generics.UpdateAPIView):
 
     def patch(self, request, *args, **kwargs):
 
-        serializer = PostUpdateSerializer(
-            data=request.data
-        )
+        serializer = PostUpdateSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
@@ -167,8 +162,6 @@ class PostDeleteView(APIView):
             {"detail": "Post deleted successfully."},
             status=status.HTTP_204_NO_CONTENT,
         )
-
-
 
 
 class PostLikeView(APIView):
@@ -207,13 +200,14 @@ class PostShareView(APIView):
             status=status.HTTP_200_OK,
         )
 
+
 class ShareRetrieveView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
-    
+
     serializer_class = ShareSerializer
-    
+
     pagination_class = SharePagination
-    
+
     def get_queryset(self):
         return PostSelector.get_shares(self.kwargs["pk"])
 
@@ -226,9 +220,7 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
 
-        return PostSelector.get_comments(
-            post_id=self.kwargs["pk"]
-        )
+        return PostSelector.get_comments(post_id=self.kwargs["pk"])
 
     def get_serializer_class(self):
 
@@ -245,9 +237,7 @@ class CommentListCreateView(generics.ListCreateAPIView):
 
     def create(self, request, *args, **kwargs):
 
-        serializer = CommentCreateSerializer(
-            data=request.data
-        )
+        serializer = CommentCreateSerializer(data=request.data)
 
         serializer.is_valid(raise_exception=True)
 
@@ -278,9 +268,7 @@ class CommentUpdateView(APIView):
 
         if not body:
             return Response(
-                {
-                    "detail": "Body is required."
-                },
+                {"detail": "Body is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -318,8 +306,6 @@ class CommentDeleteView(APIView):
         )
 
 
-
-
 class ReplyUpdateView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -330,9 +316,7 @@ class ReplyUpdateView(APIView):
 
         if not body:
             return Response(
-                {
-                    "detail": "Body is required."
-                },
+                {"detail": "Body is required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

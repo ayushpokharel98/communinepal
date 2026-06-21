@@ -52,10 +52,6 @@ urlpatterns = [
         name="delete",
     ),
 
-    # ==========================================
-    # LIKES / SHARES
-    # ==========================================
-
     path(
         "<uuid:pk>/like/",
         PostLikeView.as_view(),
@@ -74,10 +70,6 @@ urlpatterns = [
         name="user-shares",
     ),
 
-    # ==========================================
-    # COMMENTS
-    # ==========================================
-
     path(
         "<uuid:pk>/comments/",
         CommentListCreateView.as_view(),
@@ -95,10 +87,6 @@ urlpatterns = [
         CommentDeleteView.as_view(),
         name="comment-delete",
     ),
-
-    # ==========================================
-    # REPLIES
-    # ==========================================
 
     path(
         "replies/<uuid:pk>/update/",

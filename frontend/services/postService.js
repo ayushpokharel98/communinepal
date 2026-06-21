@@ -5,10 +5,6 @@ import api from "./api";
 
 const postService = {
 
-  // ==========================================
-  // POSTS
-  // ==========================================
-
   async getFeed(cursor = null) {
 
     const params = cursor ? `?cursor=${cursor}` : "";
@@ -90,10 +86,6 @@ const postService = {
     return response.data;
   },
 
-  // ==========================================
-  // LIKES
-  // ==========================================
-
   async toggleLike(postId) {
 
     const response = await api.post(
@@ -102,10 +94,6 @@ const postService = {
 
     return response.data;
   },
-
-  // ==========================================
-  // SHARES
-  // ==========================================
 
   async toggleShare(postId, note = "") {
 
@@ -128,10 +116,6 @@ const postService = {
 
     return response.data
   },
-
-  // ==========================================
-  // COMMENTS
-  // ==========================================
 
   async getComments(postId, cursor = null) {
 
@@ -188,10 +172,6 @@ const postService = {
 
     return response.data;
   },
-
-  // ==========================================
-  // REPLIES
-  // ==========================================
 
   async updateReply(replyId, body) {
 

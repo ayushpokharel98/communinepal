@@ -1,9 +1,11 @@
-from chat.models import Conversation
-from django.shortcuts import get_object_or_404
+from chat.models import Message
 class MessageSelector:
     @staticmethod
     def get_conversation_messages(user, conversation_id):
-        conversation = get_object_or_404(Conversation, id=conversation_id, members=user)
-        
-        return conversation.messages.select_related("sender")
-    
+        return (
+            Message.objects.filter(
+                conversation_id=conversation_id, conversation__members=user
+            )
+            .select_related("sender", "sender__profile")
+            .order_by("-created_at")
+        )

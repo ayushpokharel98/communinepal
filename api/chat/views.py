@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework import generics
+from rest_framework.pagination import CursorPagination
 from .serializers import (
     MessageSerializer,
     ConversationSerializer,
@@ -23,12 +24,17 @@ from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
+class MessagePagination(CursorPagination):
+    page_size = 30
+    ordering = "-created_at"
+    cursor_query_param = "cursor"
+
 class ConversationView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
         conversations = ConversationSelector.get_user_conversations(user = request.user)
-        s = ConversationSerializer(conversations, many=True)
+        s = ConversationSerializer(conversations, many=True, context = {"request": request})
         
         return Response(s.data, status=HTTP_200_OK)
     
@@ -44,26 +50,28 @@ class ConversationView(APIView):
             status=HTTP_201_CREATED
         )
 
-class ConversationMessageView(APIView):
+class ConversationMessageView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
-    
-    def get(self, request, conversation_id):
-        messages = MessageSelector.get_conversation_messages(request.user, conversation_id)
-        
-        serializer = MessageSerializer(messages, many=True)
-        
-        return Response(serializer.data)
-    
+    serializer_class = MessageSerializer
+    pagination_class = MessagePagination
+
+    def get_queryset(self):
+        return MessageSelector.get_conversation_messages(
+            self.request.user,
+            self.kwargs["conversation_id"]
+        )
+
 class MessageSendView(APIView):
     permission_classes = [IsAuthenticated]
     
-    def post(self, request, conversation_id, parent_id=None):
+    def post(self, request, conversation_id):
         content = request.data.get("content")
+        parent_id = request.data.get("parent_id")
         if not content:
             return Response({"detail":"Content is required!"}, status=HTTP_400_BAD_REQUEST)
         
         message = MessageService.send_message(request.user, conversation_id, content, parent_id)
-        s = MessageSerializer(message)
+        s = MessageSerializer(message, context = {"request": request})
         
         return Response(s.data, HTTP_201_CREATED)
     
@@ -76,9 +84,9 @@ class MessageUpdateView(APIView):
         
         message = MessageService.edit_message(request.user, message_id, s.validated_data["content"])
         
-        return Response(MessageSerializer(message).data, status=HTTP_200_OK)
+        return Response(MessageSerializer(message, context = {"request": request}).data, status=HTTP_200_OK)
     
     def delete(self, request, message_id):
         MessageService.delete_message(request.user, message_id)
-        return Response({"detail": "Message Deleted Successfully!"},status=HTTP_204_NO_CONTENT)
+        return Response({"detail": "Message Deleted Successfully!"},status=HTTP_200_OK)
     

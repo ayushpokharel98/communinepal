@@ -1,6 +1,6 @@
 @import "tailwindcss";
 *{
-  scrollbar-color: rgb(255, 8, 8);
+  scrollbar-width: none;
 }
 @keyframes slideIn {
   from {
