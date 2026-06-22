@@ -67,7 +67,7 @@ const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) =>
                 <button
                     type="submit"
                     disabled={!text.trim()}
-                    className="p-2.5 rounded-full bg-gray-700 hover:bg-gray-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-gray-100 transition-colors shrink-0"
+                    className="p-2.5 rounded-full bg-gray-700 hover:bg-blue-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-gray-100 transition-colors shrink-0"
                 >
                     <Send size={17} />
                 </button>

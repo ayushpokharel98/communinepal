@@ -22,8 +22,17 @@ const MessageBubble = ({ message, isOwn, onEdit, onDelete }) => {
     });
 
     return (
-        <div className={`group flex items-end gap-2 ${isOwn ? "justify-end" : "justify-start"} px-3`}>
-            {isOwn && (
+        <div className={`group flex items-center align-middle gap-2 ${isOwn ? "justify-end" : "justify-start"} px-3`}>
+            {
+                !isOwn && (
+                <img
+                src={message.sender.profile_picture}
+                alt={message.sender.username}
+                className="w-8 h-8 rounded-full object-cover bg-gray-700 shrink-0"
+            />
+                )
+            }
+            {(isOwn) && (
                 <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setMenuOpen((v) => !v)}
@@ -31,11 +40,15 @@ const MessageBubble = ({ message, isOwn, onEdit, onDelete }) => {
                             menuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                         }`}
                     >
-                        <MoreHorizontal size={16} />
+                        {
+                            !message.is_deleted && (
+                                <MoreHorizontal size={16} />
+                            )
+                        }
                     </button>
 
                     {menuOpen && (
-                        <div className="absolute bottom-full right-0 mb-1 w-36 rounded-lg bg-gray-800 border border-gray-700 shadow-lg overflow-hidden z-10">
+                        <div className="absolute bottom-full right-0 mb-1 w-36 rounded-lg bg-gray-800 border border-gray-700 shadow-lg overflow-hidden z-50">
                             <button
                                 onClick={() => {
                                     setMenuOpen(false);
@@ -62,7 +75,7 @@ const MessageBubble = ({ message, isOwn, onEdit, onDelete }) => {
             <div
                 className={`max-w-[75%] sm:max-w-[60%] rounded-2xl px-3.5 py-2 ${
                     isOwn
-                        ? "bg-gray-700 text-gray-100 rounded-br-md"
+                        ? "bg-blue-600/80 text-gray-100 rounded-br-md"
                         : "bg-gray-800 text-gray-100 rounded-bl-md"
                 }`}
             >

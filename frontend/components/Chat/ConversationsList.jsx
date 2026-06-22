@@ -2,8 +2,7 @@ import timeAgo from "../../services/timeAgo";
 
 const ConversationItem = ({ conversation, active, onClick }) => {
     const other = conversation.other_user;
-    const last = conversation.last_message;
-
+    const last = conversation.last_message;    
     return (
         <button
             onClick={onClick}
@@ -31,7 +30,7 @@ const ConversationItem = ({ conversation, active, onClick }) => {
                     {last
                         ? last.is_deleted
                             ? "Message deleted"
-                            : last.content
+                            : `${last.sender.username}: ${last.content}`
                         : "Say hello \uD83D\uDC4B"}
                 </p>
             </div>

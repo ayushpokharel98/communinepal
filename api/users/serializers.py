@@ -96,5 +96,6 @@ class FriendshipSerializer(serializers.ModelSerializer):
         return {
             "id" : other.id,
             "username": other.username,
+            "full_name":other.full_name,
             "profile_picture": request.build_absolute_uri(other.profile.profile_picture.url)
         }

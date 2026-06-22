@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
@@ -15,7 +15,7 @@ export const EmptyChatState = () => (
     </div>
 );
 
-const ChatWindow = ({ conversation, currentUserId, onBack }) => {
+const ChatWindow = ({ conversation, currentUserId, onBack, setConversations }) => {
     const {
         messages,
         loading,
@@ -24,15 +24,19 @@ const ChatWindow = ({ conversation, currentUserId, onBack }) => {
         topSentinelRef,
         addMessage,
         updateMessage,
-        removeMessage,
     } = useInfiniteMessages(conversation.id);
 
     const [editingMessage, setEditingMessage] = useState(null);
 
     const handleSend = async (content) => {
         try {
-            const message = await chatService.sendMessage(conversation.id, { content });
-            addMessage(message);
+            if (conversation.optimistic) {
+                const newConversation = await chatService.createConversation(conversation.other_user.username);
+                setConversations((prev) => [newConversation, ...prev]);
+                const message = await chatService.sendMessage(newConversation.id, { content });
+            } else {
+                const message = await chatService.sendMessage(conversation.id, { content });
+            }
         } catch (err) {
             console.error("Failed to send message", err);
         }
@@ -51,7 +55,6 @@ const ChatWindow = ({ conversation, currentUserId, onBack }) => {
 
     const handleDelete = async (message) => {
         const previous = message;
-        // optimistic soft-delete to match backend's is_deleted flag pattern
         updateMessage(message.id, { is_deleted: true, content: "" });
         try {
             await chatService.deleteMessage(message.id);
@@ -79,7 +82,7 @@ const ChatWindow = ({ conversation, currentUserId, onBack }) => {
             <MessageInput
                 onSend={handleSend}
                 editingMessage={editingMessage}
-                onCancelEdit={() => setEditingMessage(null)}
+                onCancelEdit={() => setEditingMessagetingMessage(null)}
                 onSubmitEdit={handleSubmitEdit}
             />
         </div>

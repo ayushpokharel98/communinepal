@@ -15,7 +15,6 @@ const Message = () => {
     const [friendsLoading, setFriendsLoading] = useState(true);
 
     const [activeConversation, setActiveConversation] = useState(null);
-    // controls which pane is visible on mobile: sidebar list vs full-width chat
     const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
     useEffect(() => {
@@ -52,17 +51,23 @@ const Message = () => {
 
     const handleSelectFriend = useCallback(
         async (friend) => {
-            // reuse an existing conversation with this friend if there is one
-            const existing = conversations.find((c) => c.other_user?.id === friend.id);
+            const existing = conversations.find((c) => c.other_user?.id === friend.other_user.id);
             if (existing) {
                 handleSelectConversation(existing);
                 return;
             }
 
             try {
-                const conversation = await chatService.createConversation(friend.username);
-                setConversations((prev) => [conversation, ...prev]);
-                handleSelectConversation(conversation);
+                const optimisticConversation = {
+                  other_user: {
+                    "id":friend.other_user.id,
+                    "username": friend.other_user.username,
+                    "full_name": friend.other_user.full_name,
+                    "profile_picture": friend.other_user.profile_picture
+                  },
+                  optimistic: true
+                };
+                handleSelectConversation(optimisticConversation);
             } catch (err) {
                 console.error("Failed to start conversation", err);
             }
@@ -95,6 +100,7 @@ const Message = () => {
                             conversation={activeConversation}
                             currentUserId={user.user?.id}
                             onBack={handleBack}
+                            setConversations={setConversations}
                         />
                     </div>
                 ) : (

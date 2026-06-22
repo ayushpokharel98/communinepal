@@ -45,7 +45,12 @@ class MessageService:
             members=sender
         )
         
-        msg = Message.objects.create(conversation = conversation, sender = sender, content = content, parent_id = parent_id)
+        if parent_id:
+            parent = get_object_or_404(Message, id=parent_id, conversation=conversation, is_deleted=False)
+            msg = Message.objects.create(conversation = conversation, sender = sender, content = content, parent = parent)
+            return msg
+         
+        msg = Message.objects.create(conversation = conversation, sender = sender, content = content)
         
         transaction.on_commit(lambda: cls._broadcast(conversation_id, "message", MessageSerializer(msg).data))
         return msg
@@ -54,6 +59,9 @@ class MessageService:
     def edit_message(cls, user, message_id, content):
         message = get_object_or_404(Message, id=message_id)
         checkMessageOwner(message, user)
+        
+        if message.is_deleted:
+            raise PermissionDenied("Deleted messages can't be edited.")
         
         message.content = content
         message.is_edited = True
@@ -73,7 +81,7 @@ class MessageService:
         message.save(update_fields=["is_deleted"])
         
         transaction.on_commit(
-            lambda: cls._broadcast(message.conversation.id, "message_delete", {"id": message.id})
+            lambda: cls._broadcast(message.conversation.id, "message_delete", {"id": str(message.id)})
         )
         
         return message

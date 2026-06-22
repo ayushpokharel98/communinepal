@@ -46,7 +46,7 @@ class ConversationView(APIView):
         conversation = ConversationService.get_or_create_conversation(user1=request.user, user2=user)
         
         return Response(
-            ConversationSerializer(conversation).data,
+            ConversationSerializer(conversation, context={"request": request}).data,
             status=HTTP_201_CREATED
         )
 

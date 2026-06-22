@@ -28,6 +28,50 @@ export default function useInfiniteMessages(conversationId) {
     const containerRef = useRef(null); // scroll container, set by ChatWindow
     const topSentinelRef = useRef(null);
     const observerRef = useRef(null);
+    const socketRef = useRef(null);
+    const scrollToBottom = useCallback(
+        (behavior = "auto") => {
+            const el = containerRef.current;
+            if (!el) return;
+
+            el.scrollTo({
+                top: el.scrollHeight,
+                behavior,
+            });
+        },
+        []
+    );
+    useEffect(() => {
+        if (!conversationId) {
+            return;
+        }
+        const socket = new WebSocket(`ws://localhost:8000/ws/chat/${conversationId}/`);
+        socketRef.current = socket;
+        socket.onopen = () => {
+            console.log("Socket initialized");
+        }
+        socket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            const messageType = message.type;
+            const messageData = message.data;
+            switch (messageType){
+                case 'message':
+                    addMessage(messageData);
+                    break;
+                case 'message_edit':
+                    updateMessage(messageData.id, { content: messageData.content, is_edited: true });
+                case 'message_delete':
+                    removeMessage(messageData.id);
+            }
+        }
+        socket.onclose = () => {
+            console.log("Socket closed");
+        }
+        return () => {
+            socket.close();
+            socketRef.current = null;
+        }
+    }, [conversationId])
 
     const reset = useCallback(() => {
         setMessages([]);
@@ -38,18 +82,32 @@ export default function useInfiniteMessages(conversationId) {
 
     const loadInitial = useCallback(async () => {
         if (!conversationId) return;
+
         setInitialLoading(true);
+
         try {
-            const data = await chatService.getMessages(conversationId);
-            const results = data.results ?? data;
-            // backend returns newest-first; reverse for oldest -> newest rendering
+            const data =
+                await chatService.getMessages(
+                    conversationId
+                );
+
+            const results =
+                data.results ?? data;
+
             setMessages([...results].reverse());
-            nextCursorRef.current = extractCursor(data.next);
+
+            nextCursorRef.current =
+                extractCursor(data.next);
+
             setHasMore(Boolean(data.next));
+
+            requestAnimationFrame(() => {
+                scrollToBottom();
+            });
         } finally {
             setInitialLoading(false);
         }
-    }, [conversationId]);
+    }, [conversationId, scrollToBottom]);
 
     const loadOlder = useCallback(async () => {
         if (!conversationId || loading || !hasMore || !nextCursorRef.current) return;
@@ -102,9 +160,22 @@ export default function useInfiniteMessages(conversationId) {
         return () => observerRef.current?.disconnect();
     }, [loadOlder, messages.length === 0]);
 
-    const addMessage = useCallback((message) => {
-        setMessages((prev) => [...prev, message]);
-    }, []);
+    const addMessage = useCallback(
+        (message) => {
+            setMessages((prev) => {
+                const exists = prev.some((m) => String(m.id) === String(message.id));
+                if (exists) return prev;
+
+                return [...prev, message]
+            }
+            );
+
+            requestAnimationFrame(() => {
+                scrollToBottom("smooth");
+            });
+        },
+        [scrollToBottom]
+    );
 
     const updateMessage = useCallback((id, patch) => {
         setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
@@ -123,6 +194,6 @@ export default function useInfiniteMessages(conversationId) {
         topSentinelRef,
         addMessage,
         updateMessage,
-        removeMessage,
+        scrollToBottom
     };
 }

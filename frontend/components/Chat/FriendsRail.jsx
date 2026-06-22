@@ -17,7 +17,7 @@ const FriendsRail = ({ friends, onSelectFriend, loading }) => {
             ) : friends.length === 0 ? (
                 <p className="text-xs text-gray-500 px-1 py-2">No friends yet</p>
             ) : (
-                <div className="flex gap-3 overflow-x-auto px-1 pb-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
+                <div className="flex py-2 gap-3 overflow-x-auto px-1 pb-1 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
                     {friends.map((friend) => (
                         <button
                             key={friend.id}

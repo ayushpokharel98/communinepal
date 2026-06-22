@@ -5,8 +5,8 @@ const chatService = {
         const res = await api.get('/chat/conversation/');
         return res.data;
     },
-    createConversation: async()=>{
-        const res = await api.post('/chat/conversation/');
+    createConversation: async(username)=>{
+        const res = await api.post('/chat/conversation/', {username});
         return res.data;
     },
     getMessages: async(conversation_id, cursor=null)=>{
