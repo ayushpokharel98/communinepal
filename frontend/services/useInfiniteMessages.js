@@ -18,7 +18,9 @@ const extractCursor = (url) => {
  * - `topSentinelRef` should be attached to a div at the top of the message list;
  *   an IntersectionObserver fires `loadOlder` when it scrolls into view.
  */
-export default function useInfiniteMessages(conversationId) {
+export default function useInfiniteMessages(conversation, setConversations) {
+    const conversationId = conversation.id;
+    const last_message = conversation.last_message;
     const [messages, setMessages] = useState([]);
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(true);
@@ -53,20 +55,26 @@ export default function useInfiniteMessages(conversationId) {
         socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
             const messageType = message.type;
-            const messageData = message.data;
+            const messageData = message.data;            
             switch (messageType){
                 case 'message':
                     addMessage(messageData);
+                    setConversations((prev)=> prev.map((c)=> c.id===conversationId ? {...c, last_message:messageData}: c));
                     break;
                 case 'message_edit':
                     updateMessage(messageData.id, { content: messageData.content, is_edited: true });
+                    break;
                 case 'message_delete':
-                    removeMessage(messageData.id);
+                    updateMessage(messageData.id, {is_deleted:true});
+                    break;
+                default:
+                    break;
             }
         }
         socket.onclose = () => {
             console.log("Socket closed");
         }
+        
         return () => {
             socket.close();
             socketRef.current = null;
@@ -169,7 +177,6 @@ export default function useInfiniteMessages(conversationId) {
                 return [...prev, message]
             }
             );
-
             requestAnimationFrame(() => {
                 scrollToBottom("smooth");
             });

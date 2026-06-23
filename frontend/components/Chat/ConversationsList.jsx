@@ -1,6 +1,6 @@
 import timeAgo from "../../services/timeAgo";
 
-const ConversationItem = ({ conversation, active, onClick }) => {
+const ConversationItem = ({ conversation, active, onClick }) => {    
     const other = conversation.other_user;
     const last = conversation.last_message;    
     return (

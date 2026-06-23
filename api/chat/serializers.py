@@ -47,7 +47,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ConversationSerializer(serializers.ModelSerializer):
     members = UserBasicSerializer(many=True)
-    last_message = serializers.SerializerMethodField()
+    last_message = MessageSerializer()
     other_user = serializers.SerializerMethodField()
 
     class Meta:
@@ -60,14 +60,6 @@ class ConversationSerializer(serializers.ModelSerializer):
             "last_message",
             "other_user",
         ]
-
-    def get_last_message(self, obj):
-        message = obj.messages.filter(is_deleted=False).first()
-
-        if not message:
-            return None
-
-        return MessageSerializer(message, context={"request": None}).data
 
     def get_other_user(self, obj):
         request = self.context["request"]

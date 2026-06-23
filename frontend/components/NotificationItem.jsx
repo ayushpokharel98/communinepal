@@ -69,7 +69,7 @@ const NotificationItem = ({ notification }) => {
 
       {!notification.is_read ? (
         <>
-          <div title="Mark as read">
+          <div title="Mark as read" className="sm:hidden">
             <Check onClick={() => handleMarkRead(notification.id)} className="size-4 hover:text-green-700 transition-colors duration-300" />
           </div>
           <div className="size-2 bg-blue-500 rounded-full" />

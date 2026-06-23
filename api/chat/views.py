@@ -44,7 +44,7 @@ class ConversationView(APIView):
         username = s.validated_data["username"]
         user = get_object_or_404(User, username=username)
         conversation = ConversationService.get_or_create_conversation(user1=request.user, user2=user)
-        
+        ConversationService._broadcast(user.id, conversation.id, "new", request)
         return Response(
             ConversationSerializer(conversation, context={"request": request}).data,
             status=HTTP_201_CREATED

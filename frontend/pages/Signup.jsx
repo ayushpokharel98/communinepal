@@ -21,6 +21,7 @@ const Signup = () => {
       setValues("");
     } catch (err) {
       const serverErrors = err.response?.data
+      
       if (serverErrors) {
         Object.entries(serverErrors).forEach(([key, values]) => {
           setError(key, {

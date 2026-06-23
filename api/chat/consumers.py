@@ -107,4 +107,4 @@ class ConversationConsumer(AsyncJsonWebsocketConsumer):
             await self.channel_layer.group_discard(self.group_name, self.channel_name)
     
     async def send_conversation_data(self, event):
-        await self.send_json(event["data"]);
+        await self.send_json({"type": event["event"], "data": event["data"]})

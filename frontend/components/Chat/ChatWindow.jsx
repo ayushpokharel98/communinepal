@@ -5,6 +5,7 @@ import MessageList from "./MessageList";
 import MessageInput from "./MessageInput";
 import chatService from "../../services/chatService";
 import useInfiniteMessages from "../../services/useInfiniteMessages";
+import { useAuth } from "../../contexts/AuthContext";
 
 export const EmptyChatState = () => (
     <div className="hidden md:flex flex-1 flex-col items-center justify-center text-gray-600 gap-3">
@@ -15,7 +16,7 @@ export const EmptyChatState = () => (
     </div>
 );
 
-const ChatWindow = ({ conversation, currentUserId, onBack, setConversations }) => {
+const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, setActiveConversation }) => {
     const {
         messages,
         loading,
@@ -24,19 +25,29 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations }) =
         topSentinelRef,
         addMessage,
         updateMessage,
-    } = useInfiniteMessages(conversation.id);
+    } = useInfiniteMessages(conversation, setConversations);
 
     const [editingMessage, setEditingMessage] = useState(null);
+    const { user } = useAuth();
 
     const handleSend = async (content) => {
         try {
+            let currentConversation = conversation;
             if (conversation.optimistic) {
-                const newConversation = await chatService.createConversation(conversation.other_user.username);
-                setConversations((prev) => [newConversation, ...prev]);
-                const message = await chatService.sendMessage(newConversation.id, { content });
-            } else {
-                const message = await chatService.sendMessage(conversation.id, { content });
+                currentConversation = await chatService.createConversation(
+                    conversation.other_user.username
+                );
+                setConversations((prev) => [
+                    currentConversation,
+                    ...prev.filter((c) => c.id !== conversation.id),
+                ]);
+                setActiveConversation(currentConversation);
             }
+            const message = await chatService.sendMessage(
+                currentConversation.id,
+                { content }
+            );
+            setConversations((prev) => prev.map((c) => c.id === currentConversation.id ? { ...c, last_message: message } : c));
         } catch (err) {
             console.error("Failed to send message", err);
         }
@@ -45,7 +56,6 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations }) =
     const handleSubmitEdit = async (messageId, content) => {
         try {
             const updated = await chatService.editMessage(messageId, content);
-            updateMessage(messageId, { content: updated.content, is_edited: true });
         } catch (err) {
             console.error("Failed to edit message", err);
         } finally {
@@ -55,7 +65,6 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations }) =
 
     const handleDelete = async (message) => {
         const previous = message;
-        updateMessage(message.id, { is_deleted: true, content: "" });
         try {
             await chatService.deleteMessage(message.id);
         } catch (err) {

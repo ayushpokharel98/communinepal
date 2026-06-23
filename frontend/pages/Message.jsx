@@ -18,6 +18,45 @@ const Message = () => {
     const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
     useEffect(() => {
+        const socket = new WebSocket("ws://localhost:8000/ws/chat/conversation/");
+        socket.onopen = () => {
+            console.log("Conversation socket initialized!");
+
+        }
+        socket.onclose = () => {
+            console.log("Conversation socket disconnected!")
+        }
+        socket.onmessage = (event) => {
+            const payload = JSON.parse(event.data);
+            if (payload.type === "new") {
+                setConversations((prev) => [
+                    {
+                        ...payload.data,
+                        last_message: null,
+                    },
+                    ...prev,
+                ]);
+            }
+
+            if (payload.type === "update") {
+                setConversations((prev) =>
+                    prev.map((c) =>
+                        c.id === payload.data.id
+                            ? {
+                                ...c,
+                                last_message: payload.data.last_message,
+                            }
+                            : c
+                    )
+                );
+            }
+        };
+        return () => {
+            socket.close();
+        }
+    }, [])
+
+    useEffect(() => {
         const loadConversations = async () => {
             try {
                 const data = await chatService.getConversations();
@@ -59,13 +98,13 @@ const Message = () => {
 
             try {
                 const optimisticConversation = {
-                  other_user: {
-                    "id":friend.other_user.id,
-                    "username": friend.other_user.username,
-                    "full_name": friend.other_user.full_name,
-                    "profile_picture": friend.other_user.profile_picture
-                  },
-                  optimistic: true
+                    other_user: {
+                        "id": friend.other_user.id,
+                        "username": friend.other_user.username,
+                        "full_name": friend.other_user.full_name,
+                        "profile_picture": friend.other_user.profile_picture
+                    },
+                    optimistic: true
                 };
                 handleSelectConversation(optimisticConversation);
             } catch (err) {
@@ -101,6 +140,7 @@ const Message = () => {
                             currentUserId={user.user?.id}
                             onBack={handleBack}
                             setConversations={setConversations}
+                            setActiveConversation={handleSelectConversation}
                         />
                     </div>
                 ) : (

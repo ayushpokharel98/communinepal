@@ -28,6 +28,8 @@ const Login = () => {
       await login(data);
       navigate('/');
     } catch (err) {
+      console.log(err.response.data);
+      
       error(err.response?.data?.error || err.response?.data?.verification || "Something went wrong, please try again!");
     }
   }
