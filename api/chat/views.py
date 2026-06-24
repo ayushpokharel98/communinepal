@@ -5,7 +5,9 @@ from .serializers import (
     MessageSerializer,
     ConversationSerializer,
     ConversationCreateSerializer,
-    MessageUpdateSerializer
+    MessageUpdateSerializer,
+    TimelineEventSerializer,
+    CallSerializer
 )
 from .models import (
     Message,
@@ -60,6 +62,29 @@ class ConversationMessageView(generics.ListAPIView):
             self.request.user,
             self.kwargs["conversation_id"]
         )
+        
+class ConversationTimelineView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = TimelineEventSerializer
+    pagination_class = MessagePagination
+    
+    def get_queryset(self):
+        return MessageSelector.get_conversation_timeline(
+            self.request.user,
+            self.kwargs["conversation_id"]
+        )
+        
+class ConversationCallsView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = CallSerializer
+    pagination_class = MessagePagination
+    
+    def get_queryset(self):
+        return MessageSelector.get_conversation_calls(
+            self.request.user,
+            self.kwargs["conversation_id"]
+        )
+        
 
 class MessageSendView(APIView):
     permission_classes = [IsAuthenticated]
@@ -70,8 +95,8 @@ class MessageSendView(APIView):
         if not content:
             return Response({"detail":"Content is required!"}, status=HTTP_400_BAD_REQUEST)
         
-        message = MessageService.send_message(request.user, conversation_id, content, parent_id)
-        s = MessageSerializer(message, context = {"request": request})
+        event = MessageService.send_message(request.user, conversation_id, content, parent_id)
+        s = TimelineEventSerializer(event)
         
         return Response(s.data, HTTP_201_CREATED)
     

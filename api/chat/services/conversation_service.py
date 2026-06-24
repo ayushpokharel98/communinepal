@@ -2,7 +2,7 @@ import logging
 from chat.models import Conversation
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-from chat.serializers import ConversationSerializer, UserBasicSerializer, MessageSerializer
+from chat.serializers import ConversationSerializer, UserBasicSerializer, TimelineEventSerializer
 from django.shortcuts import get_object_or_404
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ class ConversationService:
                         "event": event_type, 
                         "data":{
                             "id": str(conversation_id),
-                            "last_message": MessageSerializer(conversation.last_message).data,
+                            "last_event": TimelineEventSerializer(conversation.last_event).data,
                         }
                     }
                 )

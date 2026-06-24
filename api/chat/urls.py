@@ -4,6 +4,8 @@ from .views import (
     ConversationMessageView,
     MessageSendView,
     MessageUpdateView,
+    ConversationCallsView,
+    ConversationTimelineView
 )
 
 urlpatterns = [
@@ -11,6 +13,16 @@ urlpatterns = [
     path(
         "messages/<uuid:conversation_id>/",
         ConversationMessageView.as_view(),
+        name="messages",
+    ),
+    path(
+        "calls/<uuid:conversation_id>/",
+        ConversationCallsView.as_view(),
+        name="messages",
+    ),
+    path(
+        "timeline/<uuid:conversation_id>/",
+        ConversationTimelineView.as_view(),
         name="messages",
     ),
     path(

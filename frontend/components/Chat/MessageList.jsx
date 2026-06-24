@@ -9,7 +9,7 @@ const MessageList = ({
   hasMore,
   onEdit,
   onDelete,
-}) => {
+}) => {  
   return (
     <div
       ref={containerRef}
@@ -53,9 +53,9 @@ const MessageList = ({
       {messages.map((message) => (
         <MessageBubble
           key={message.id}
-          message={message}
+          message={message.data}
           isOwn={
-            message.sender?.id === currentUserId
+            message.data.sender?.id === currentUserId
           }
           onEdit={onEdit}
           onDelete={onDelete}

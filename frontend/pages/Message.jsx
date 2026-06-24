@@ -28,11 +28,13 @@ const Message = () => {
         }
         socket.onmessage = (event) => {
             const payload = JSON.parse(event.data);
+            console.log(payload);
+            
             if (payload.type === "new") {
                 setConversations((prev) => [
                     {
                         ...payload.data,
-                        last_message: null,
+                        last_event: null,
                     },
                     ...prev,
                 ]);
@@ -44,7 +46,7 @@ const Message = () => {
                         c.id === payload.data.id
                             ? {
                                 ...c,
-                                last_message: payload.data.last_message,
+                                last_event: payload.data.last_event,
                             }
                             : c
                     )

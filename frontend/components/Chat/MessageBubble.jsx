@@ -3,8 +3,7 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 
 const MessageBubble = ({ message, isOwn, onEdit, onDelete }) => {
     const [menuOpen, setMenuOpen] = useState(false);
-    const menuRef = useRef(null);
-
+    const menuRef = useRef(null);    
     useEffect(() => {
         if (!menuOpen) return;
         const handleClickOutside = (e) => {

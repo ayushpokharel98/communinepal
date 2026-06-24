@@ -11,7 +11,7 @@ const chatService = {
     },
     getMessages: async(conversation_id, cursor=null)=>{
         const params = cursor ? {cursor} : {};
-        const res = await api.get(`/chat/messages/${conversation_id}/`, {params});
+        const res = await api.get(`/chat/timeline/${conversation_id}/`, {params});        
         return res.data;
     },
     sendMessage: async(conversation_id, data)=>{

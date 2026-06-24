@@ -47,7 +47,7 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
                 currentConversation.id,
                 { content }
             );
-            setConversations((prev) => prev.map((c) => c.id === currentConversation.id ? { ...c, last_message: message } : c));
+            setConversations((prev) => prev.map((c) => c.id === currentConversation.id ? { ...c, last_event: message } : c));
         } catch (err) {
             console.error("Failed to send message", err);
         }
@@ -91,7 +91,7 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
             <MessageInput
                 onSend={handleSend}
                 editingMessage={editingMessage}
-                onCancelEdit={() => setEditingMessagetingMessage(null)}
+                onCancelEdit={() => setEditingMessage(null)}
                 onSubmitEdit={handleSubmitEdit}
             />
         </div>

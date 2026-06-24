@@ -1,12 +1,12 @@
 import logging
-from chat.models import Message, Conversation
+from chat.models import Message, Conversation, TimelineEvent
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import BasePermission
 from django.shortcuts import get_object_or_404
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.db import transaction
-from chat.serializers import MessageSerializer
+from chat.serializers import MessageSerializer, TimelineEventSerializer
 from django.utils import timezone
 from chat.services.conversation_service import ConversationService
 
@@ -62,13 +62,19 @@ class MessageService:
             content=content,
             parent=parent,
         )
+        
+        event = TimelineEvent.objects.create(
+            conversation=conversation,
+            type=TimelineEvent.EventType.MESSAGE,
+            message=msg
+        )
 
         conversation.updated_at = timezone.now()
-        conversation.last_message = msg
-        conversation.save(update_fields=["updated_at", "last_message"])
+        conversation.last_event = event
+        conversation.save(update_fields=["updated_at", "last_event"])
 
         to_user = conversation.members.exclude(pk=sender.pk).first()
-        data = MessageSerializer(msg).data
+        data = TimelineEventSerializer(event).data
 
         def after_commit():
             cls._broadcast(conversation_id, "message", data)
@@ -82,7 +88,7 @@ class MessageService:
 
         transaction.on_commit(after_commit)
 
-        return msg
+        return event
 
     @classmethod
     def edit_message(cls, user, message_id, content):

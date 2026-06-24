@@ -53,7 +53,7 @@ export default function useInfiniteMessages(conversation, setConversations) {
             console.log("Socket initialized");
         }
         socket.onmessage = (event) => {
-            const message = JSON.parse(event.data);
+            const message = JSON.parse(event.data);            
             const messageType = message.type;
             const messageData = message.data;            
             switch (messageType){
@@ -97,10 +97,10 @@ export default function useInfiniteMessages(conversation, setConversations) {
             const data =
                 await chatService.getMessages(
                     conversationId
-                );
+                );                
 
             const results =
-                data.results ?? data;
+                data.results ?? data;                
 
             setMessages([...results].reverse());
 
@@ -171,7 +171,7 @@ export default function useInfiniteMessages(conversation, setConversations) {
     const addMessage = useCallback(
         (message) => {
             setMessages((prev) => {
-                const exists = prev.some((m) => String(m.id) === String(message.id));
+                const exists = prev.some((m) => String(m.data.id) === String(message.data.id));
                 if (exists) return prev;
 
                 return [...prev, message]
@@ -185,7 +185,8 @@ export default function useInfiniteMessages(conversation, setConversations) {
     );
 
     const updateMessage = useCallback((id, patch) => {
-        setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, ...patch } : m)));
+        setMessages((prev) => prev.map((m) => (m.data.id === id ? { ...m, data: {...m.data, ...patch} } : m)));        
+        
     }, []);
 
     const removeMessage = useCallback((id) => {
