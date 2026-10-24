@@ -46,6 +46,34 @@ class Message(models.Model):
         return f"Message ({self.id}) in {self.conversation.id}"
 
 
+def message_media_upload_path(instance, filepath):
+    return f"messages/{instance.message_id}/{filepath}"
+
+
+def validate_file_type(file):
+    return
+
+
+class MessageMedia(models.Model):
+    class MediaType(models.TextChoices):
+        PHOTO = "photo", "Photo"
+        VIDEO = "video", "Video"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message = models.ForeignKey(Message, related_name="media", on_delete=models.CASCADE)
+    file = models.FileField(
+        upload_to=message_media_upload_path, validators=[validate_file_type]
+    )
+    media_type = models.CharField(choices=MediaType.choices, max_length=5)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [models.Index(fields=["message", "created_at"])]
+
+    def __str__(self):
+        return f"Media - {self.message.id}"
+
+
 class MessageSeen(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name="seen")
     user = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -13,7 +13,7 @@ const postService = {
 
     return response.data;
   },
-
+  
   async getUserPosts(userId, cursor = null) {
 
     const params = cursor ? `?cursor=${cursor}` : "";

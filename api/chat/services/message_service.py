@@ -1,5 +1,5 @@
 import logging
-from chat.models import Message, Conversation
+from chat.models import Message, Conversation, MessageMedia
 from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import BasePermission
 from django.shortcuts import get_object_or_404
@@ -40,7 +40,7 @@ class MessageService:
             logger.exception("Failed to broadcast the message")
 
     @classmethod
-    def send_message(cls, sender, conversation_id, content, parent_id=None):
+    def send_message(cls, sender, conversation_id, content, uploaded_files=None, media_types = None, parent_id=None):
         conversation = get_object_or_404(
             Conversation,
             id=conversation_id,
@@ -62,6 +62,14 @@ class MessageService:
             content=content,
             parent=parent,
         )
+        
+        if uploaded_files:
+            for (file, media_type) in zip(uploaded_files, media_types):
+                MessageMedia.objects.create(
+                    message=msg,
+                    file=file,
+                    media_type=media_type
+                )
 
         conversation.updated_at = timezone.now()
         conversation.last_message = msg

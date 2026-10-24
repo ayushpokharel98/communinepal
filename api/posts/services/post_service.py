@@ -15,6 +15,7 @@ from ..models import (
 from notifications.services.notification_service import NotificationService
 from .permission_service import PermissionService
 
+
 class PostService:
 
     MAX_MEDIA_FILES = 10
@@ -91,7 +92,6 @@ class PostService:
 
         PermissionService.check_permission(post, user)
 
-
         post.is_deleted = True
         post.save(update_fields=["is_deleted"])
 
@@ -133,7 +133,6 @@ class PostService:
     # =========================
     # COMMENTS
     # =========================
-
 
     @staticmethod
     def add_comment(

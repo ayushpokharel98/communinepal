@@ -39,7 +39,8 @@ const Posts = ({ type, userId, username }) => {
         type === "profile"
           ? await postService.getUserPosts(userId, cursor)
           : await postService.getFeed(cursor);      
-
+      console.log(res);
+      
       const newPosts = res.results ?? res;
       const newCursor = res.next
         ? new URL(res.next).searchParams.get("cursor")

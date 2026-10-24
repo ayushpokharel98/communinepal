@@ -13,15 +13,7 @@ const MessageList = ({
   return (
     <div
       ref={containerRef}
-      className="
-        flex-1
-        overflow-y-auto
-        px-4
-        py-4
-        flex
-        flex-col
-        gap-1.5
-      "
+      className="flex-1 overflow-y-auto px-4 py-4 flex flex-col gap-1.5"    
     >
       <div
         ref={topSentinelRef}

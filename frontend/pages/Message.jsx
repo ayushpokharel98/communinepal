@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Navbar from "../components/Navbar";
-import Sidebar from "../components/chat/Sidebar";
-import ChatWindow, { EmptyChatState } from "../components/chat/ChatWindow";
+import Sidebar from "../components/Chat/Sidebar";
+import ChatWindow, { EmptyChatState } from "../components/Chat/ChatWindow";
 import chatService from "../services/chatService";
 import friendService from "../services/friendService";
 import { useAuth } from "../contexts/AuthContext";

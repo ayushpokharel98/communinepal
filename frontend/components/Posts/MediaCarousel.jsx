@@ -19,6 +19,9 @@ const MediaCarousel = ({ media }) => {
 
   if (!total) return null;
 
+  console.log(media);
+  
+
   return (
     <div className="relative overflow-hidden " onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <div

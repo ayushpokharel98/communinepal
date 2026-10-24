@@ -14,7 +14,7 @@ urlpatterns = [
         name="messages",
     ),
     path(
-        "message/<uuid:conversation_id>/",
+        "message/",
         MessageSendView.as_view(),
         name="message-send",
     ),

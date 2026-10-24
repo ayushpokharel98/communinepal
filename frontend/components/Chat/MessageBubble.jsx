@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import ClickableMedia from "../ClickableMedia";
 
 const MessageBubble = ({ message, isOwn, onEdit, onDelete }) => {
     const [menuOpen, setMenuOpen] = useState(false);
     const menuRef = useRef(null);
-
+    const API_URL = import.meta.env.VITE_BASE_URL;
     useEffect(() => {
         if (!menuOpen) return;
         const handleClickOutside = (e) => {
@@ -25,20 +26,19 @@ const MessageBubble = ({ message, isOwn, onEdit, onDelete }) => {
         <div className={`group flex items-center align-middle gap-2 ${isOwn ? "justify-end" : "justify-start"} px-3`}>
             {
                 !isOwn && (
-                <img
-                src={message.sender.profile_picture}
-                alt={message.sender.username}
-                className="w-8 h-8 rounded-full object-cover bg-gray-700 shrink-0"
-            />
+                    <img
+                        src={message.sender.profile_picture}
+                        alt={message.sender.username}
+                        className="w-8 h-8 rounded-full object-cover bg-gray-700 shrink-0"
+                    />
                 )
             }
             {(isOwn) && (
                 <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setMenuOpen((v) => !v)}
-                        className={`p-1.5 rounded-full hover:bg-gray-800 text-gray-500 transition-opacity ${
-                            menuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                        }`}
+                        className={`p-1.5 rounded-full hover:bg-gray-800 text-gray-500 transition-opacity ${menuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                            }`}
                     >
                         {
                             !message.is_deleted && (
@@ -73,17 +73,26 @@ const MessageBubble = ({ message, isOwn, onEdit, onDelete }) => {
             )}
 
             <div
-                className={`max-w-[75%] sm:max-w-[60%] rounded-2xl px-3.5 py-2 ${
-                    isOwn
-                        ? "bg-blue-600/80 text-gray-100 rounded-br-md"
-                        : "bg-gray-800 text-gray-100 rounded-bl-md"
-                }`}
+                className={`max-w-[75%] sm:max-w-[60%] rounded-2xl px-3.5 py-2 ${isOwn
+                    ? "bg-blue-600/80 text-gray-100 rounded-br-md"
+                    : "bg-gray-800 text-gray-100 rounded-bl-md"
+                    }`}
             >
                 {message.is_deleted ? (
                     <p className="text-sm italic text-gray-500">Message deleted</p>
                 ) : (
                     <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.content}</p>
                 )}
+                {
+                    message.media.length > 0 && (
+                        <div className={`grid ${message.media.length===1?"grid-cols-1":message.media.length<5?"grid-cols-2":"grid-cols-3"} gap-2`}>
+                            {message.media.map((file) => (
+                                <ClickableMedia key={file.id} file={file} />
+                            ))
+                            }
+                        </div>
+                    )
+                }
                 <div className="flex items-center gap-1 justify-end mt-0.5">
                     {message.is_edited && !message.is_deleted && (
                         <span className="text-[10px] text-gray-500">edited</span>

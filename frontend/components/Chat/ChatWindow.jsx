@@ -30,7 +30,7 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
     const [editingMessage, setEditingMessage] = useState(null);
     const { user } = useAuth();
 
-    const handleSend = async (content) => {
+    const handleSend = async (content, files, mediaTypes) => {
         try {
             let currentConversation = conversation;
             if (conversation.optimistic) {
@@ -43,13 +43,15 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
                 ]);
                 setActiveConversation(currentConversation);
             }
-            const message = await chatService.sendMessage(
-                currentConversation.id,
-                { content }
-            );
+            const message = await chatService.sendMessage({
+                conversation_id: currentConversation.id,
+                content,
+                files,
+                mediaTypes
+            });
             setConversations((prev) => prev.map((c) => c.id === currentConversation.id ? { ...c, last_message: message } : c));
         } catch (err) {
-            console.error("Failed to send message", err);
+            console.error("Failed to send message", err.response.data);
         }
     };
 
