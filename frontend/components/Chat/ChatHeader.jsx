@@ -1,6 +1,8 @@
 import { ArrowLeft, Phone, Video, Info } from "lucide-react";
+import {useNavigate} from "react-router-dom"
 
 const ChatHeader = ({ otherUser, onBack }) => {
+    const navigate = useNavigate();
     return (
         <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-900 border-b border-gray-800 shrink-0">
             <div className="flex items-center gap-3 min-w-0">
@@ -13,7 +15,8 @@ const ChatHeader = ({ otherUser, onBack }) => {
                 <img
                     src={otherUser?.profile_picture}
                     alt={otherUser?.username}
-                    className="w-10 h-10 rounded-full object-cover bg-gray-700 shrink-0"
+                    className="w-10 h-10 rounded-full object-cover bg-gray-700 shrink-0 transition duration-300 hover:scale-105 hover:cursor-pointer"
+                    onClick={()=>navigate(`/profile/${otherUser.username}`)}
                 />
                 <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-100 truncate">

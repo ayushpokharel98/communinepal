@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, Children } from "react";
-import { Send, X, ImagePlus } from "lucide-react";
+import { Send, X, ImagePlus, Loader } from "lucide-react";
 import { useToast } from "../../contexts/ToastContext";
+import Loading from "../Loading";
 
 
 const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) => {
@@ -10,6 +11,7 @@ const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) =>
     const [files, setFiles] = useState([]);
     const { error } = useToast();
     const [previews, setPreviews] = useState([]);
+    const [sending, setSending] = useState(false);
     useEffect(() => {
         if (editingMessage) {
             setText(editingMessage.content);
@@ -19,22 +21,27 @@ const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) =>
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const trimmed = text.trim();
-        if (!trimmed && files.length === 0) return;
-        const mediaTypes = files.map((file) =>
-            file.type.startsWith("video") ? "video" : "photo"
-        )
-        if (editingMessage) {
-            onSubmitEdit(editingMessage.id, trimmed);
-        } else {
-            onSend(trimmed, files, mediaTypes);
+        setSending(true);
+        try{
+            const trimmed = text.trim();
+            if (!trimmed && files.length === 0) return;
+            const mediaTypes = files.map((file) =>
+                file.type.startsWith("video") ? "video" : "photo"
+            )
+            if (editingMessage) {
+                onSubmitEdit(editingMessage.id, trimmed);
+            } else {
+                onSend(trimmed, files, mediaTypes);
+            }
+            setText("");
+            previews.forEach((preview) => {
+                URL.revokeObjectURL(preview.url)
+            })
+            setPreviews([]);
+            setFiles([]);
+        }finally{
+            setSending(false);
         }
-        setText("");
-        previews.forEach((preview) => {
-            URL.revokeObjectURL(preview.url)
-        })
-        setPreviews([]);
-        setFiles([]);
     };
 
     const handleKeyDown = (e) => {
@@ -215,7 +222,11 @@ const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) =>
                         disabled={!text.trim() && files.length === 0}
                         className="p-2.5 rounded-full bg-gray-700 hover:bg-blue-600 disabled:opacity-40 disabled:hover:bg-gray-700 text-gray-100 transition-colors shrink-0"
                     >
-                        <Send size={17} />
+                        {sending ? (
+                            <Loader className="animate-spin"/>
+                        ):(
+                            <Send size={17} />
+                        )}
                     </button>
                 </div>
             </form>
