@@ -10,6 +10,7 @@ const Sidebar = ({
     activeConversationId,
     onSelectConversation,
     onSelectFriend,
+    onDeleteConversation,
     isMobileHidden,
 }) => {
     return (
@@ -36,6 +37,7 @@ const Sidebar = ({
                 conversations={conversations}
                 activeId={activeConversationId}
                 onSelect={onSelectConversation}
+                onDelete={onDeleteConversation}
                 loading={conversationsLoading}
             />
         </aside>

@@ -4,7 +4,7 @@ import { useToast } from "../../contexts/ToastContext";
 import Loading from "../Loading";
 
 
-const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) => {
+const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit, replyingMessage, onCancelReply }) => {
     const [text, setText] = useState("");
     const inputRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -19,7 +19,7 @@ const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) =>
         }
     }, [editingMessage]);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
         setSending(true);
         try{
@@ -29,9 +29,9 @@ const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) =>
                 file.type.startsWith("video") ? "video" : "photo"
             )
             if (editingMessage) {
-                onSubmitEdit(editingMessage.id, trimmed);
-            } else {
-                onSend(trimmed, files, mediaTypes);
+                await onSubmitEdit(editingMessage.id, trimmed);
+            } else{
+                await onSend(trimmed, files, mediaTypes, replyingMessage?.id ?? null);
             }
             setText("");
             previews.forEach((preview) => {
@@ -100,6 +100,22 @@ const MessageInput = ({ onSend, editingMessage, onCancelEdit, onSubmitEdit }) =>
                         onClick={() => {
                             onCancelEdit();
                             setText("");
+                        }}
+                        className="p-1 rounded-full hover:bg-gray-700 text-gray-400"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
+            )}
+            {replyingMessage && (
+                <div className="flex items-center justify-between px-4 py-1.5 bg-gray-800/60 text-xs text-gray-400">
+                    <span className="flex-1">
+                        Replying to message <br />
+                        {replyingMessage.content ? (<span>"{replyingMessage.content}"</span>) : ""}
+                    </span>
+                    <button
+                        onClick={() => {
+                            onCancelReply();
                         }}
                         className="p-1 rounded-full hover:bg-gray-700 text-gray-400"
                     >

@@ -21,7 +21,6 @@ const Message = () => {
         const socket = new WebSocket("ws://localhost:8000/ws/chat/conversation/");
         socket.onopen = () => {
             console.log("Conversation socket initialized!");
-
         }
         socket.onclose = () => {
             console.log("Conversation socket disconnected!")
@@ -49,6 +48,18 @@ const Message = () => {
                             : c
                     )
                 );
+            }
+
+            if (payload.type === "delete") {
+                const deletedId = payload.data.id;
+
+                setConversations((prev) =>
+                    prev.filter((conversation) => conversation.id !== deletedId)
+                );
+
+                setActiveConversation((current) => current?.id === deletedId ? null : current);
+
+                setShowChatOnMobile(false);
             }
         };
         return () => {
@@ -118,6 +129,21 @@ const Message = () => {
         setShowChatOnMobile(false);
     }, []);
 
+    const handleDeleteConversation = async (conversationId) => {
+        await chatService.deleteConversation(conversationId);
+
+        setConversations((prev) =>
+            prev.filter((conversation) => conversation.id !== conversationId)
+        );
+        setActiveConversation((current) =>
+            current?.id === conversationId ? null : current
+        );
+
+        if (activeConversation?.id === conversationId) {
+            setShowChatOnMobile(false);
+        }
+    }
+
     return (
         <>
             <Navbar />
@@ -130,6 +156,7 @@ const Message = () => {
                     activeConversationId={activeConversation?.id}
                     onSelectConversation={handleSelectConversation}
                     onSelectFriend={handleSelectFriend}
+                    onDeleteConversation={handleDeleteConversation}
                     isMobileHidden={showChatOnMobile}
                 />
 

@@ -113,6 +113,7 @@ class MessageService:
         return message
 
     @classmethod
+    @transaction.atomic
     def delete_message(cls, user, message_id):
         message = get_object_or_404(Message, id=message_id)
         checkMessageOwner(message, user)

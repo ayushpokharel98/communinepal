@@ -2,7 +2,7 @@ import { MoreHorizontal, X, Trash2, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import timeAgo from "../../services/timeAgo";
 
-const ConversationItem = ({ conversation, active, onClick }) => {
+const ConversationItem = ({ conversation, active, onClick, onDelete }) => {
     const other = conversation.other_user;
     const last = conversation.last_message;
 
@@ -14,8 +14,7 @@ const ConversationItem = ({ conversation, active, onClick }) => {
         try {
             setDeleting(true);
 
-            // TODO: Call your delete conversation API here.
-            // await axios.delete(`/api/chat/conversations/${conversation.id}/`);
+            await onDelete(conversation.id);
 
             setDeleteModal(false);
             setMenuOpen(false);
@@ -178,7 +177,11 @@ const ConversationItem = ({ conversation, active, onClick }) => {
                                 <span className="font-medium text-gray-200">
                                     {other?.full_name || other?.username}
                                 </span>
-                                ? This action cannot be undone and will be done on both sides.
+                                ? This action cannot be undone.
+                            </p>
+                            <p className="text-white">
+                                <input type="checkbox" name="" id="" />
+                                Delete for both sides?
                             </p>
                         </div>
 
@@ -213,6 +216,7 @@ const ConversationsList = ({
     conversations,
     activeId,
     onSelect,
+    onDelete,
     loading,
 }) => {
     return (
@@ -243,6 +247,7 @@ const ConversationsList = ({
                         conversation={conv}
                         active={conv.id === activeId}
                         onClick={() => onSelect(conv)}
+                        onDelete={onDelete}
                     />
                 ))
             )}

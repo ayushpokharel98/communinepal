@@ -108,3 +108,14 @@ class MessageUpdateView(APIView):
     def delete(self, request, message_id):
         MessageService.delete_message(request.user, message_id)
         return Response({"detail": "Message Deleted Successfully!"}, status=HTTP_200_OK)
+
+class ConversationDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def delete(self, request, conversation_id):
+        ConversationService.delete_conversation(
+            user=request.user,
+            conversation_id=conversation_id
+        )
+        
+        return Response(status=HTTP_204_NO_CONTENT)

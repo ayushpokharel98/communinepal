@@ -35,7 +35,7 @@ class MessageMediaSerializer(serializers.ModelSerializer):
 class MessageSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
     conversation = serializers.UUIDField(source="conversation.id", read_only=True)
-    parent = serializers.UUIDField(source="parent.id", read_only=True, allow_null=True)
+    parent = serializers.SerializerMethodField()
     sender = UserBasicSerializer()
     media = MessageMediaSerializer(many=True, read_only=True)
 
@@ -52,6 +52,31 @@ class MessageSerializer(serializers.ModelSerializer):
             "is_edited",
             "media",
         ]
+
+    def get_parent(self, obj):
+        if not obj.parent:
+            return None
+
+        return MessageSerializer(obj.parent, include_parent=False).data
+
+    def __init__(self, *args, include_parent=True, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.include_parent = include_parent
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+
+        if instance.is_deleted:
+            data["content"] = ""
+            data["media"] = []
+            data["parent"] = None
+            data["is_edited"] = False
+
+        if not self.include_parent:
+            data["parent"] = None
+
+        return data
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -97,7 +122,7 @@ class MessageSendSerializer(serializers.Serializer):
         child=serializers.ChoiceField(
             choices=MessageMedia.MediaType.choices, required=False, default=list
         ),
-        required=False
+        required=False,
     )
 
     def validate(self, attrs):
@@ -107,8 +132,8 @@ class MessageSendSerializer(serializers.Serializer):
 
         if not content and not files:
             raise serializers.ValidationError("There must be some content or media.")
-        
-        if(len(files) != len(media_types)):
+
+        if len(files) != len(media_types):
             raise serializers.ValidationError("files length and media_types mismatch.")
 
         if len(files) > 10:

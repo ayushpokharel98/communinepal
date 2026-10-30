@@ -9,6 +9,7 @@ const MessageList = ({
   hasMore,
   onEdit,
   onDelete,
+  onReply
 }) => {
   return (
     <div
@@ -51,6 +52,7 @@ const MessageList = ({
           }
           onEdit={onEdit}
           onDelete={onDelete}
+          onReply={onReply}
         />
       ))}
     </div>

@@ -11,17 +11,22 @@ const chatService = {
     },
     getMessages: async (conversation_id, cursor = null) => {
         const params = cursor ? { cursor } : {};
-        const res = await api.get(`/chat/messages/${conversation_id}/`, { params });
+        const res = await api.get(`/chat/messages/${conversation_id}/`, { params });     
+        console.log(res.data);
+           
         return res.data;
     },
-    sendMessage: async ({conversation_id, content = "", files = [], mediaTypes = [] }) => {
+    sendMessage: async ({ conversation_id, content = "", files = [], mediaTypes = [], parentId=null }) => {
         const formData = new FormData();
         formData.append("conversation_id", conversation_id)
         formData.append("content", content);
-        mediaTypes.forEach((media)=>{
+        if(parentId){
+            formData.append("parent_id", parentId);
+        }
+        mediaTypes.forEach((media) => {
             formData.append("media_types", media)
         });
-        files.forEach((file)=>{
+        files.forEach((file) => {
             formData.append("uploaded_files", file)
         });
         const res = await api.post(`/chat/message/`, formData, {
@@ -37,6 +42,10 @@ const chatService = {
     },
     deleteMessage: async (message_id) => {
         const res = await api.delete(`/chat/message/${message_id}/update/`);
+        return res.data;
+    },
+    deleteConversation: async (conversation_id) => {
+        const res = await api.delete(`/chat/conversation/${conversation_id}/`);
         return res.data;
     }
 }

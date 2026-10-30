@@ -28,9 +28,10 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
     } = useInfiniteMessages(conversation, setConversations);
 
     const [editingMessage, setEditingMessage] = useState(null);
+    const [replyingMessage, setReplyingMessage] = useState(null);
     const { user } = useAuth();
 
-    const handleSend = async (content, files, mediaTypes) => {
+    const handleSend = async (content, files, mediaTypes, parentId) => {
         try {
             let currentConversation = conversation;
             if (conversation.optimistic) {
@@ -47,11 +48,14 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
                 conversation_id: currentConversation.id,
                 content,
                 files,
-                mediaTypes
+                mediaTypes,
+                parentId
             });
             setConversations((prev) => prev.map((c) => c.id === currentConversation.id ? { ...c, last_message: message } : c));
         } catch (err) {
             console.error("Failed to send message", err.response.data);
+        } finally{
+            setReplyingMessage(null);
         }
     };
 
@@ -86,15 +90,24 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
                 topSentinelRef={topSentinelRef}
                 loading={loading}
                 hasMore={hasMore}
-                onEdit={(message) => setEditingMessage(message)}
+                onEdit={(message) => {
+                    setEditingMessage(message);
+                    setReplyingMessage(null);
+                }}
+                onReply={(message) => {
+                    setReplyingMessage(message);
+                    setEditingMessage(null);
+                }}
                 onDelete={handleDelete}
             />
 
             <MessageInput
                 onSend={handleSend}
                 editingMessage={editingMessage}
-                onCancelEdit={() => setEditingMessagetingMessage(null)}
+                onCancelEdit={() => setEditingMessage(null)}
                 onSubmitEdit={handleSubmitEdit}
+                replyingMessage={replyingMessage}
+                onCancelReply={() => setReplyingMessage(null)}
             />
         </div>
     );

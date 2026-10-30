@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { X, Maximize2, Play } from "lucide-react";
 
-const ClickableMedia = ({ file }) => {
+const ClickableMedia = ({ file, size }) => {
     const BASE_URL = import.meta.env.VITE_BASE_URL || "";
     const [isOpen, setIsOpen] = useState(false);
 
@@ -30,7 +30,7 @@ const ClickableMedia = ({ file }) => {
                 type="button"
                 onClick={() => setIsOpen(true)}
                 aria-label={`View ${isPhoto ? "image" : "video"}`}
-                className="group relative block size-24 shrink-0 overflow-hidden rounded-xl border border-gray-700/70 bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition duration-300 hover:scale-105"
+                className={`group relative block shrink-0 overflow-hidden rounded-xl border border-gray-700/70 bg-gray-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition duration-300 hover:scale-105 ${size==="sm"?"size-12":"size-24"}`}
             >
                 {isPhoto ? (
                     <img
