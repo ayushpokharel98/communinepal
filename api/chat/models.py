@@ -8,14 +8,31 @@ User = get_user_model()
 class Conversation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     members = models.ManyToManyField(User, related_name="conversations")
-    last_message = models.ForeignKey(
-        "Message", on_delete=models.SET_NULL, null=True, blank=True, related_name="+"
-    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Conversation between {self.members.all()}"
+    
+class ConversationUserState(models.Model):
+    conversation = models.ForeignKey(
+        Conversation, on_delete=models.CASCADE, related_name="user_states"
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="conversation_states"
+    )
+    cleared_at = models.DateTimeField(null=True, blank=True)
+    
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["conversation", "user"],
+                name="unique_conversation_user_state"
+            )
+        ]
+        
+    def __str__(self):
+        return f"{self.conversation.id} cleared by {self.user.username}"
 
 
 class Message(models.Model):

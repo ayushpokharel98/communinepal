@@ -72,8 +72,7 @@ class MessageService:
                 )
 
         conversation.updated_at = timezone.now()
-        conversation.last_message = msg
-        conversation.save(update_fields=["updated_at", "last_message"])
+        conversation.save(update_fields=["updated_at"])
 
         to_user = conversation.members.exclude(pk=sender.pk).first()
         data = MessageSerializer(msg).data
@@ -85,7 +84,8 @@ class MessageService:
                 ConversationService._broadcast(
                     user_id=to_user.id,
                     conversation_id=conversation_id,
-                    event_type="update"
+                    event_type="update",
+                    last_messsage=data
                 )
 
         transaction.on_commit(after_commit)

@@ -1,5 +1,5 @@
 import logging
-from chat.models import Conversation, MessageMedia
+from chat.models import Conversation, MessageMedia, ConversationUserState
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from chat.serializers import (
@@ -9,13 +9,14 @@ from chat.serializers import (
 )
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
 
 class ConversationService:
     @staticmethod
-    def _broadcast(user_id, conversation_id, event_type, request=None):
+    def _broadcast(user_id, conversation_id, event_type, request=None, last_messsage=None):
         conversation = get_object_or_404(Conversation, id=conversation_id)
         channel_layer = get_channel_layer()
         if not channel_layer:
@@ -43,9 +44,7 @@ class ConversationService:
                         "event": event_type,
                         "data": {
                             "id": str(conversation_id),
-                            "last_message": MessageSerializer(
-                                conversation.last_message
-                            ).data,
+                            "last_message": last_messsage
                         },
                     },
                 )
@@ -54,66 +53,27 @@ class ConversationService:
 
     @staticmethod
     def get_or_create_conversation(user1, user2):
-        conversations = Conversation.objects.filter(members=user1).filter(members=user2)
-
-        if conversations.exists():
-            return conversations.first()
-
+        conversation = Conversation.objects.filter(members=user1).filter(members=user2).first()
+        if conversation:
+            return conversation, False
+        
         conversation = Conversation.objects.create()
-
-        conversation.members.add(user1, user2)
-
-        return conversation
-
+        conversation.members.add(user1,user2)
+    
+        return conversation, True
 
     @staticmethod
-    @transaction.atomic
     def delete_conversation(user, conversation_id):
         conversation = get_object_or_404(
             Conversation.objects.filter(members=user),
             id=conversation_id,
         )
 
-        members_ids = list(
-            conversation.members.values_list("id", flat=True)
+        state, _ = ConversationUserState.objects.get_or_create(
+            conversation=conversation, user=user
         )
-
-        media_files = [
-            (media.file.storage, media.file.name)
-            for media in MessageMedia.objects.filter(
-                message__conversation=conversation
-            ).exclude(file="")
-        ]
-
-        conversation_id = str(conversation.id)
-        conversation.delete()
-
-        def after_commit():
-            for storage, file_name in media_files:
-                try:
-                    storage.delete(file_name)
-                except Exception:
-                    logger.exception(
-                        "Failed to delete conversation media: %s",
-                        file_name,
-                    )
-            channel_layer = get_channel_layer()
-            if not channel_layer:
-                return
-
-            for member_id in members_ids:
-                try:
-                    async_to_sync(channel_layer.group_send)(
-                        f"conversation_{member_id}",
-                        {
-                            "type": "send_conversation_data",
-                            "event": "delete",
-                            "data": {"id": conversation_id},
-                        },
-                    )
-                except Exception:
-                    logger.exception(
-                        "Failed to broadcast conversation deletion"
-                    )
-
-        transaction.on_commit(after_commit)
+        
+        state.cleared_at = timezone.now()
+        state.save(update_fields=["cleared_at"])
+        
+        return conversation

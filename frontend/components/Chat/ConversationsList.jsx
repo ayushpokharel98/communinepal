@@ -179,10 +179,6 @@ const ConversationItem = ({ conversation, active, onClick, onDelete }) => {
                                 </span>
                                 ? This action cannot be undone.
                             </p>
-                            <p className="text-white">
-                                <input type="checkbox" name="" id="" />
-                                Delete for both sides?
-                            </p>
                         </div>
 
                         <div className="flex justify-end gap-3 px-5 pb-5">

@@ -1,4 +1,4 @@
-from .models import Message, Conversation, MessageSeen, MessageMedia
+from .models import Message, Conversation, MessageSeen, MessageMedia, ConversationUserState
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from os import getenv
@@ -81,7 +81,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ConversationSerializer(serializers.ModelSerializer):
     members = UserBasicSerializer(many=True)
-    last_message = MessageSerializer()
+    last_message = serializers.SerializerMethodField()
     other_user = serializers.SerializerMethodField()
 
     class Meta:
@@ -103,6 +103,27 @@ class ConversationSerializer(serializers.ModelSerializer):
         if not other_user:
             return None
         return UserBasicSerializer(other_user).data
+    
+    def get_last_message(self, obj):
+        request = self.context["request"]
+        
+        state = ConversationUserState.objects.filter(conversation=obj, user=request.user).first()
+        
+        messages = Message.objects.filter(
+            conversation=obj,
+        )
+        
+        if state and state.cleared_at:
+            messages = messages.filter(
+                created_at__gte = state.cleared_at
+            )
+        
+        last_message = messages.order_by("-created_at").first()
+        
+        if not last_message:
+            return None
+        
+        return MessageSerializer(last_message, context=self.context).data
 
 
 class ConversationCreateSerializer(serializers.Serializer):
