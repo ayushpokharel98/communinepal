@@ -1,4 +1,4 @@
-FROM node:23-bookworm
+FROM node:24
 
 WORKDIR /app
 

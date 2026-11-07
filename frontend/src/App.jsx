@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 import { AuthProvider } from "../contexts/AuthContext";
 import { ToastProvider } from "../contexts/ToastContext";
 import { NotificationProvider } from "../contexts/NotificationContext";
+import { CallProvider } from "../contexts/CallContext";
+import CallOverlay from "../components/Call/IncomingCallOverlay";
 
 import PrivateRoute from "../services/PrivateRoute";
 import PublicRoute from "../services/PublicRoute";
@@ -21,13 +23,18 @@ import SinglePost from "../pages/SinglePost";
 import ProfilePosts from "../components/Profile/ProfilePosts";
 import ProfileAbout from "../components/Profile/ProfileAbout";
 import ProfileShares from "../components/Profile/ProfileShares";
+import CallPage from "../pages/CallPage";
+import IncomingCallOverlay from "../components/Call/IncomingCallOverlay";
 
 const ProtectedLayout = () => {
   return (
     <PrivateRoute>
-      <NotificationProvider>
-        <Outlet />
-      </NotificationProvider>
+      <CallProvider>
+        <NotificationProvider>
+          <Outlet />
+        </NotificationProvider>
+        <IncomingCallOverlay />
+      </CallProvider>
     </PrivateRoute>
   );
 };
@@ -88,14 +95,14 @@ const App = () => {
               <Route path="/" element={<Home />} />
               <Route path="/friends" element={<Friends />} />
               <Route path="/message" element={<Message />} />
-              <Route path="/profile/:username" element={<Profile />}> 
+              <Route path="/profile/:username" element={<Profile />}>
                 <Route index element={<ProfilePosts />} />
                 <Route path="about" element={<ProfileAbout />} />
                 <Route path="shares" element={<ProfileShares />} />
               </Route>
               <Route path="/post/:postId" element={<SinglePost />} />
             </Route>
-
+            <Route path="/call" element={<PrivateRoute><CallPage /></PrivateRoute>} />
           </Routes>
         </AuthProvider>
       </ToastProvider>

@@ -1,7 +1,7 @@
 import { ArrowLeft, Phone, Video, Info } from "lucide-react";
 import {useNavigate} from "react-router-dom"
 
-const ChatHeader = ({ otherUser, onBack }) => {
+const ChatHeader = ({ otherUser, onBack, onAudioCall, onVideoCall }) => {
     const navigate = useNavigate();
     return (
         <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-900 border-b border-gray-800 shrink-0">
@@ -30,12 +30,14 @@ const ChatHeader = ({ otherUser, onBack }) => {
                 <button
                     className="p-2.5 rounded-full hover:bg-gray-800 text-gray-300 transition-colors"
                     title="Voice call"
+                    onClick={onAudioCall}
                 >
                     <Phone size={19} />
                 </button>
                 <button
                     className="p-2.5 rounded-full hover:bg-gray-800 text-gray-300 transition-colors"
                     title="Video call"
+                    onClick={onVideoCall}
                 >
                     <Video size={19} />
                 </button>

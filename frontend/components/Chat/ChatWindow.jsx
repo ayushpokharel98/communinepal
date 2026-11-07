@@ -6,6 +6,7 @@ import MessageInput from "./MessageInput";
 import chatService from "../../services/chatService";
 import useInfiniteMessages from "../../services/useInfiniteMessages";
 import { useAuth } from "../../contexts/AuthContext";
+import { useCall } from "../../contexts/CallContext";
 
 export const EmptyChatState = () => (
     <div className="hidden md:flex flex-1 flex-col items-center justify-center text-gray-600 gap-3">
@@ -30,6 +31,7 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
     const [editingMessage, setEditingMessage] = useState(null);
     const [replyingMessage, setReplyingMessage] = useState(null);
     const { user } = useAuth();
+    const {startCall} = useCall();
 
     const handleSend = async (content, files, mediaTypes, parentId) => {
         try {
@@ -79,9 +81,25 @@ const ChatWindow = ({ conversation, currentUserId, onBack, setConversations, set
         }
     };
 
+    const handleAudioCall = ()=>{
+        startCall(
+            conversation.id,
+            "audio",
+            conversation.other_user
+        );        
+    };
+
+    const handleVideoCall = () =>{
+        startCall(
+            conversation.id,
+            "video",
+            conversation.other_user
+        );
+    };
+
     return (
         <div className="flex-1 flex flex-col h-[calc(100vh-60px)] bg-gray-900 min-w-0">
-            <ChatHeader otherUser={conversation.other_user} onBack={onBack} />
+            <ChatHeader otherUser={conversation.other_user} onBack={onBack} onAudioCall={handleAudioCall} onVideoCall={handleVideoCall}/>
 
             <MessageList
                 messages={messages}
